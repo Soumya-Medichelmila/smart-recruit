@@ -34,24 +34,30 @@ A full-stack Django REST API for managing employees, job openings, and AI-powere
 
 ## 📁 Project Structure
 
-```
-smart-recruit/
-├── manage.py
-├── .env                        # API keys (never commit)
-├── .gitignore
-├── requirements.txt
-├── employee_management/        # Core Django settings
+``` Backend
+CAREER_PORTAL/
+├── accounts/
+├── employee_management/
 │   ├── settings.py
 │   ├── urls.py
+│   ├── asgi.py
 │   └── wsgi.py
-├── accounts/                   # Auth & permissions
-├── employees/                  # Employee management
-├── jobs/                       # Job openings
-└── recruitment/                # Resumes & AI screening
-    ├── models.py
-    ├── views.py
-    ├── serializers.py
-    └── urls.py
+├── jobs/
+├── masters/
+├── media/
+├── recruitment/
+│   ├── migrations/
+│   ├── admin.py
+│   ├── apps.py
+│   ├── models.py
+│   ├── serializers.py
+│   ├── views.py
+│   └── urls.py
+├── venv/
+├── .env
+├── .gitignore
+├── db.sqlite3
+└── manage.py
 ```
 
 ---
