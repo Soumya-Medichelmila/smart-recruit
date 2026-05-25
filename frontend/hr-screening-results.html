@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Synergy — Screening Results</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .jobs-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        .job-tile {
+            background:#fff; border-radius:14px; padding:20px;
+            border:2px solid #E5E7EB; cursor:pointer; transition:all 0.15s;
+        }
+        .job-tile:hover { border-color:#6366F1; box-shadow:0 4px 16px rgba(99,102,241,0.12); }
+        .job-tile.active { border-color:#6366F1; background:#EEF2FF; }
+        .job-tile-title { font-size:15px; font-weight:700; color:#111827; margin-bottom:4px; }
+        .job-tile-dept { font-size:12px; color:#6B7280; margin-bottom:12px; }
+        .job-tile-stats { display:flex; gap:12px; }
+        .stat-chip {
+            background:#F3F4F6; border-radius:8px; padding:6px 10px;
+            font-size:11px; font-weight:700; color:#374151; text-align:center;
+        }
+        .stat-chip span { display:block; font-size:16px; font-weight:800; color:#6366F1; }
+
+        /* Results Table */
+        .results-panel {
+            background:#fff; border-radius:16px; border:1px solid #E5E7EB;
+            box-shadow:0 1px 6px rgba(0,0,0,0.06); overflow:hidden;
+        }
+        .results-header {
+            padding:20px 24px; border-bottom:1px solid #E5E7EB;
+            display:flex; justify-content:space-between; align-items:center;
+            background: linear-gradient(135deg, #4F46E5, #7C3AED);
+            color:#fff;
+        }
+        .results-header-title { font-size:17px; font-weight:800; }
+        .results-header-sub { font-size:13px; opacity:0.85; margin-top:2px; }
+
+        .results-table { width:100%; border-collapse:collapse; }
+        .results-table th {
+            background:#F9FAFB; padding:12px 20px; text-align:left;
+            font-size:11px; font-weight:700; color:#6B7280;
+            letter-spacing:0.5px; text-transform:uppercase;
+            border-bottom:1px solid #E5E7EB;
+        }
+        .results-table td {
+            padding:16px 20px; border-bottom:1px solid #F3F4F6;
+            vertical-align:middle;
+        }
+        .results-table tr:last-child td { border-bottom:none; }
+        .results-table tr:hover td { background:#FAFAFA; }
+
+        .rank-medal { font-size:20px; }
+        .rank-num { font-size:14px; font-weight:800; color:#9CA3AF; }
+        .candidate-name { font-size:14px; font-weight:700; color:#111827; }
+
+        .score-wrap { display:flex; align-items:center; gap:12px; }
+        .score-circle {
+            width:44px; height:44px; border-radius:50%;
+            display:flex; align-items:center; justify-content:center;
+            font-size:13px; font-weight:800; color:#fff; flex-shrink:0;
+        }
+        .score-bar-col { flex:1; }
+        .score-bar-bg { background:#F3F4F6; border-radius:20px; height:8px; overflow:hidden; margin-bottom:4px; }
+        .score-bar-fill { height:100%; border-radius:20px; }
+        .score-label { font-size:11px; font-weight:700; }
+
+        .reason-text { font-size:12px; color:#6B7280; line-height:1.55; max-width:380px; }
+        .screened-date { font-size:12px; color:#9CA3AF; }
+
+        .empty-results {
+            text-align:center; padding:64px 24px; color:#9CA3AF;
+        }
+        .empty-results .icon { font-size:52px; margin-bottom:16px; }
+        .no-selection {
+            text-align:center; padding:64px 24px;
+            background:#fff; border-radius:16px; border:1px dashed #E5E7EB;
+            color:#9CA3AF;
+        }
+    </style>
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="sidebar-logo"><h1>⚡ Synergy</h1><p>Admin Panel</p></div>
+        <nav class="sidebar-nav">
+            <a href="admin-dashboard.html"><span class="icon">🏠</span> Dashboard</a>
+            <a href="employee-list.html"><span class="icon">👥</span> Employees</a>
+            <a href="add-employee.html"><span class="icon">➕</span> Add Employee</a>
+            <a href="masters.html"><span class="icon">📋</span> Master Tables</a>
+            <a href="vacancy-requests.html"><span class="icon">📝</span> Vacancy Requests</a>
+            <a href="admin-job-openings.html"><span class="icon">📢</span> Job Openings</a>
+            <a href="hr-screening-results.html" class="active"><span class="icon">🎯</span> Screening Results</a>
+            <a href="admin-change-password.html"><span class="icon">🔑</span> Change Password</a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="sidebar-user">
+                <div class="avatar" id="avatar-initials">H</div>
+                <div class="user-info">
+                    <p id="user-name">HR</p>
+                    <span id="user-role">HR Manager</span>
+                </div>
+            </div>
+            <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <p class="page-title">🎯 Resume Screening Results</p>
+
+        <!-- Job tiles -->
+        <p style="font-size:13px;color:#6B7280;margin-bottom:14px">Select a job opening to view screening results:</p>
+        <div class="jobs-row" id="jobs-row">
+            <div style="color:#9CA3AF;font-size:13px">Loading screened jobs...</div>
+        </div>
+
+        <!-- Results panel -->
+        <div id="results-area">
+            <div class="no-selection">
+                <div style="font-size:48px;margin-bottom:12px">🎯</div>
+                <p style="font-size:15px;font-weight:600;color:#374151;margin-bottom:6px">Select a job above</p>
+                <p style="font-size:13px">Click a job tile to view the ranked candidate list</p>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    const API = 'http://127.0.0.1:8000/api';
+    const token = localStorage.getItem('access_token');
+    const role = localStorage.getItem('role_code');
+    if (!token) window.location.href = 'index.html';
+    if (role !== 'ADMIN' && role !== 'HR') window.location.href = 'employee-dashboard.html';
+
+    const name = localStorage.getItem('employee_name') || 'HR';
+    document.getElementById('user-name').textContent = name;
+    document.getElementById('user-role').textContent = localStorage.getItem('role_name') || 'HR';
+    document.getElementById('avatar-initials').textContent = name.charAt(0).toUpperCase();
+
+    function authHeaders() { return { 'Content-Type':'application/json', 'Authorization': `Bearer ${token}` }; }
+    function logout() { localStorage.clear(); window.location.href = 'index.html'; }
+
+    let activeJobId = null;
+
+    function scoreColor(score) {
+        if (score >= 80) return '#10B981';
+        if (score >= 60) return '#F59E0B';
+        if (score >= 40) return '#F97316';
+        return '#EF4444';
+    }
+    function scoreLabel(score) {
+        if (score >= 80) return 'Excellent';
+        if (score >= 60) return 'Good';
+        if (score >= 40) return 'Partial';
+        return 'Poor';
+    }
+    function rankIcon(i) {
+        return i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : null;
+    }
+
+    async function loadScreenedJobs() {
+        try {
+            const res = await fetch(`${API}/recruitment/results/`, { headers: authHeaders() });
+            const jobs = await res.json();
+            const el = document.getElementById('jobs-row');
+
+            if (!jobs.length) {
+                el.innerHTML = '<div style="color:#9CA3AF;font-size:13px;padding:8px">No screening results yet. Recruitment team needs to run screening first.</div>';
+                return;
+            }
+
+            el.innerHTML = jobs.map(j => `
+                <div class="job-tile" id="tile-${j.job_id}" onclick="loadResults(${j.job_id})">
+                    <div class="job-tile-title">${j.job_title}</div>
+                    <div class="job-tile-dept">🏢 ${j.department} &nbsp;·&nbsp; <span style="color:${j.status==='OPEN'?'#10B981':'#EF4444'}">${j.status==='OPEN'?'🟢 Open':'🔴 Closed'}</span></div>
+                    <div class="job-tile-stats">
+                        <div class="stat-chip"><span>${j.candidate_count}</span>Screened</div>
+                        <div class="stat-chip"><span>${j.avg_score}%</span>Avg Score</div>
+                    </div>
+                </div>`).join('');
+        } catch(e) {
+            document.getElementById('jobs-row').innerHTML = '<div style="color:#EF4444;font-size:13px">Failed to load</div>';
+        }
+    }
+
+    async function loadResults(jobId) {
+        activeJobId = jobId;
+        document.querySelectorAll('.job-tile').forEach(t => t.classList.remove('active'));
+        document.getElementById(`tile-${jobId}`).classList.add('active');
+        document.getElementById('results-area').innerHTML = '<div style="text-align:center;padding:40px;color:#9CA3AF">Loading results...</div>';
+
+        try {
+            const res = await fetch(`${API}/recruitment/results/${jobId}/`, { headers: authHeaders() });
+            const data = await res.json();
+            renderResults(data);
+        } catch(e) {
+            document.getElementById('results-area').innerHTML = '<div style="text-align:center;padding:40px;color:#EF4444">Failed to load results</div>';
+        }
+    }
+
+    function renderResults(data) {
+        const results = data.results || [];
+
+        if (!results.length) {
+            document.getElementById('results-area').innerHTML = `
+                <div class="results-panel">
+                    <div class="results-header">
+                        <div>
+                            <div class="results-header-title">${data.job_title}</div>
+                            <div class="results-header-sub">🏢 ${data.department}</div>
+                        </div>
+                    </div>
+                    <div class="empty-results">
+                        <div class="icon">📭</div>
+                        <p>No screening results yet for this job.</p>
+                    </div>
+                </div>`;
+            return;
+        }
+
+        document.getElementById('results-area').innerHTML = `
+            <div class="results-panel">
+                <div class="results-header">
+                    <div>
+                        <div class="results-header-title">📊 ${data.job_title}</div>
+                        <div class="results-header-sub">🏢 ${data.department} &nbsp;·&nbsp; ${results.length} candidates screened</div>
+                    </div>
+                    <div style="text-align:right">
+                        <div style="font-size:28px;font-weight:800">${results[0].match_score}%</div>
+                        <div style="font-size:12px;opacity:0.85">Top Match Score</div>
+                    </div>
+                </div>
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Candidate</th>
+                            <th style="min-width:220px">Match Score</th>
+                            <th>AI Assessment</th>
+                            <th>Screened On</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${results.map((r, i) => {
+                            const color = scoreColor(r.match_score);
+                            const medal = rankIcon(i);
+                            return `<tr>
+                                <td>${medal
+                                    ? `<span class="rank-medal">${medal}</span>`
+                                    : `<span class="rank-num">#${i+1}</span>`}
+                                </td>
+                                <td><div class="candidate-name">${r.candidate_name}</div></td>
+                                <td>
+                                    <div class="score-wrap">
+                                        <div class="score-circle" style="background:${color}">${r.match_score}%</div>
+                                        <div class="score-bar-col">
+                                            <div class="score-bar-bg">
+                                                <div class="score-bar-fill" style="width:${r.match_score}%;background:${color}"></div>
+                                            </div>
+                                            <div class="score-label" style="color:${color}">${scoreLabel(r.match_score)} Match</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><div class="reason-text">${r.reason}</div></td>
+                                <td><div class="screened-date">${new Date(r.screened_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</div></td>
+                            </tr>`;
+                        }).join('')}
+                    </tbody>
+                </table>
+            </div>`;
+    }
+
+    loadScreenedJobs();
+</script>
+</body>
+</html>

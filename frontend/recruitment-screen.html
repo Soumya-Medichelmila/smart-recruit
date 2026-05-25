@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Synergy — Screen Resumes</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .screen-layout { display:grid;grid-template-columns:340px 1fr;gap:24px;align-items:start; }
+        .panel { background:#fff;border-radius:16px;border:1px solid #E5E7EB;box-shadow:0 1px 6px rgba(0,0,0,0.06);overflow:hidden; }
+        .panel-header { padding:16px 20px;border-bottom:1px solid #E5E7EB;display:flex;justify-content:space-between;align-items:center; }
+        .panel-title { font-size:15px;font-weight:700;color:#111827; }
+        .panel-body { padding:16px 20px; }
+        .job-item { padding:12px 14px;border-radius:10px;cursor:pointer;border:1.5px solid #E5E7EB;margin-bottom:8px;transition:all 0.15s; }
+        .job-item:hover { border-color:#6366F1;background:#F5F7FF; }
+        .job-item.selected { border-color:#6366F1;background:#EEF2FF; }
+        .job-item-title { font-size:14px;font-weight:700;color:#111827;margin-bottom:2px; }
+        .job-item-meta { font-size:12px;color:#6B7280; }
+        .resume-check-item { display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;border:1.5px solid #E5E7EB;margin-bottom:8px;cursor:pointer;transition:all 0.15s; }
+        .resume-check-item:hover { border-color:#6366F1;background:#F5F7FF; }
+        .resume-check-item.checked { border-color:#6366F1;background:#EEF2FF; }
+        .resume-check-item input[type=checkbox] { width:16px;height:16px;accent-color:#6366F1;cursor:pointer; }
+        .resume-item-name { font-size:14px;font-weight:600;color:#111827; }
+        .resume-item-file { font-size:11px;color:#9CA3AF; }
+        .select-bar { display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-size:13px;color:#6B7280; }
+        .select-bar button { background:none;border:none;color:#6366F1;font-size:13px;font-weight:600;cursor:pointer; }
+        .screen-action { background:linear-gradient(135deg,#4F46E5,#7C3AED);border-radius:16px;padding:24px;color:#fff;margin-bottom:24px; }
+        .screen-action h3 { font-size:16px;font-weight:700;margin-bottom:6px; }
+        .screen-action p { font-size:13px;opacity:0.85;margin-bottom:18px; }
+        .screening-progress { display:none;text-align:center;padding:40px 24px;background:#fff;border-radius:16px;border:1px solid #E5E7EB; }
+        .spinner { width:48px;height:48px;border:4px solid #EEF2FF;border-top-color:#6366F1;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px; }
+        @keyframes spin { to { transform:rotate(360deg); } }
+        .progress-text { font-size:14px;color:#6B7280; }
+        .progress-step { font-size:13px;color:#6366F1;font-weight:600;margin-top:6px; }
+        .result-preview { background:#fff;border-radius:16px;border:1px solid #E5E7EB;overflow:hidden; }
+        .result-preview table { width:100%;border-collapse:collapse; }
+        .result-preview th { background:#F9FAFB;padding:12px 16px;text-align:left;font-size:11px;font-weight:700;color:#6B7280;letter-spacing:0.5px;text-transform:uppercase;border-bottom:1px solid #E5E7EB; }
+        .result-preview td { padding:14px 16px;border-bottom:1px solid #F3F4F6;font-size:13px;color:#374151; }
+        .result-preview tr:last-child td { border-bottom:none; }
+        .score-bar-wrap { display:flex;align-items:center;gap:10px; }
+        .score-bar-bg { flex:1;background:#F3F4F6;border-radius:20px;height:8px;overflow:hidden; }
+        .score-bar-fill { height:100%;border-radius:20px;transition:width 0.6s; }
+        .score-num { font-size:13px;font-weight:800;min-width:36px; }
+        .sidebar-divider { font-size:10px;color:#6B7280;font-weight:600;text-transform:uppercase;padding:8px 20px 4px;letter-spacing:1px; }
+    </style>
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <h1>⚡ SynergyCom</h1>
+            <p>Employee Portal</p>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="employee-dashboard.html"><span class="icon">🏠</span> Dashboard</a>
+            <a href="raise-vacancy.html"><span class="icon">📝</span> Raise Vacancy</a>
+            <a href="my-requests.html"><span class="icon">📋</span> My Requests</a>
+            <a href="job-openings.html"><span class="icon">📢</span> Job Openings</a>
+            <a href="change-password.html"><span class="icon">🔑</span> Change Password</a>
+            <div class="sidebar-divider">Recruitment</div>
+            <a href="recruitment-resumes.html"><span class="icon">📄</span> Resume Pool</a>
+            <a href="recruitment-screen.html" class="active"><span class="icon">🔍</span> Screen Resumes</a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="sidebar-user">
+                <div class="avatar" id="avatar-initials">R</div>
+                <div class="user-info">
+                    <p id="user-name">Recruiter</p>
+                    <span id="user-role">Recruitment</span>
+                </div>
+            </div>
+            <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <p class="page-title">🔍 Screen Resumes</p>
+
+        <div class="alert alert-success" id="success-alert"></div>
+        <div class="alert alert-error" id="error-alert"></div>
+
+        <div class="screen-layout">
+            <!-- Left: Job + Resume selection -->
+            <div>
+                <div class="panel" style="margin-bottom:20px">
+                    <div class="panel-header">
+                        <span class="panel-title">1️⃣ Select Job Opening</span>
+                    </div>
+                    <div class="panel-body" id="job-list">
+                        <div style="color:#9CA3AF;font-size:13px">Loading jobs...</div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <span class="panel-title">2️⃣ Select Resumes</span>
+                        <span id="selected-count" style="font-size:13px;color:#6366F1;font-weight:600">0 selected</span>
+                    </div>
+                    <div class="panel-body">
+                        <div class="select-bar">
+                            <span id="total-resumes">0 resumes in pool</span>
+                            <button onclick="toggleSelectAll()">Select All</button>
+                        </div>
+                        <div id="resume-list">
+                            <div style="color:#9CA3AF;font-size:13px">Loading resumes...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Action + Results -->
+            <div>
+                <div class="screen-action">
+                    <h3>🤖 AI Resume Screening</h3>
+                    <p>Select a job and resumes on the left, then click Screen to run AI-powered matching.</p>
+                    <button class="btn" onclick="runScreening()" id="screen-btn"
+                        style="background:#fff;color:#4F46E5;font-weight:700;font-size:14px;padding:12px 28px;border-radius:10px;border:none;cursor:pointer;width:100%">
+                        🔍 Run AI Screening
+                    </button>
+                </div>
+
+                <div class="screening-progress" id="progress-box">
+                    <div class="spinner"></div>
+                    <div class="progress-text">Running AI screening...</div>
+                    <div class="progress-step" id="progress-step">Extracting resume text</div>
+                </div>
+
+                <div id="results-area"></div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    const API = 'http://127.0.0.1:8000/api';
+    const token = localStorage.getItem('access_token');
+    const dept = localStorage.getItem('department_name') || '';
+
+    // Auth check
+    if (!token) window.location.href = 'index.html';
+
+    // Department check
+    if (dept.trim().toUpperCase() !== 'RECRUITMENT') {
+        alert('Access denied. Only Recruitment department members can access this page.');
+        window.location.href = 'employee-dashboard.html';
+    }
+
+    const name = localStorage.getItem('employee_name') || 'Recruiter';
+    document.getElementById('user-name').textContent = name;
+    document.getElementById('user-role').textContent = localStorage.getItem('role_name') || 'Recruitment';
+    document.getElementById('avatar-initials').textContent = name.charAt(0).toUpperCase();
+
+    function authHeaders() { return { 'Content-Type':'application/json','Authorization': `Bearer ${token}` }; }
+    function logout() { localStorage.clear(); window.location.href = 'index.html'; }
+
+    function showSuccess(msg) {
+        const el = document.getElementById('success-alert');
+        el.textContent = msg; el.classList.add('show');
+        setTimeout(() => el.classList.remove('show'), 4000);
+    }
+    function showError(msg) {
+        const el = document.getElementById('error-alert');
+        el.textContent = msg; el.classList.add('show');
+        setTimeout(() => el.classList.remove('show'), 4000);
+    }
+
+    let selectedJobId = null;
+    let allResumes = [];
+    let allSelected = false;
+
+    async function loadJobs() {
+        try {
+            const res = await fetch(`${API}/jobs/openings/`, { headers: authHeaders() });
+            const jobs = await res.json();
+            const openJobs = jobs.filter(j => j.status === 'OPEN');
+            const el = document.getElementById('job-list');
+
+            if (!openJobs.length) {
+                el.innerHTML = '<div style="color:#9CA3AF;font-size:13px">No open job openings</div>';
+                return;
+            }
+
+            el.innerHTML = openJobs.map(j => `
+                <div class="job-item" id="job-${j.id}" onclick="selectJob(${j.id})">
+                    <div class="job-item-title">${j.title}</div>
+                    <div class="job-item-meta">🏢 ${j.department_name} &nbsp;·&nbsp; 👥 ${j.vacancies} vacanc${j.vacancies===1?'y':'ies'}</div>
+                </div>`).join('');
+        } catch(e) {
+            document.getElementById('job-list').innerHTML = '<div style="color:#EF4444;font-size:13px">Failed to load jobs</div>';
+        }
+    }
+
+    function selectJob(id) {
+        selectedJobId = id;
+        document.querySelectorAll('.job-item').forEach(el => el.classList.remove('selected'));
+        document.getElementById(`job-${id}`).classList.add('selected');
+        document.getElementById('results-area').innerHTML = '';
+    }
+
+    async function loadResumes() {
+        try {
+            const res = await fetch(`${API}/recruitment/resumes/`, { headers: authHeaders() });
+            allResumes = await res.json();
+            const el = document.getElementById('resume-list');
+            document.getElementById('total-resumes').textContent = `${allResumes.length} resume${allResumes.length!==1?'s':''} in pool`;
+
+            if (!allResumes.length) {
+                el.innerHTML = '<div style="color:#9CA3AF;font-size:13px">No resumes in pool. Upload from Resume Pool page.</div>';
+                return;
+            }
+
+            el.innerHTML = allResumes.map(r => {
+                const ext = r.file.split('.').pop().toUpperCase();
+                return `
+                <div class="resume-check-item" id="ri-${r.id}" onclick="toggleResume(${r.id}, this)">
+                    <input type="checkbox" id="cb-${r.id}" value="${r.id}" onclick="event.stopPropagation();toggleResume(${r.id}, document.getElementById('ri-${r.id}'))" />
+                    <div>
+                        <div class="resume-item-name">${r.candidate_name}</div>
+                        <div class="resume-item-file">${ext} &nbsp;·&nbsp; ${new Date(r.uploaded_at).toLocaleDateString('en-IN')}</div>
+                    </div>
+                </div>`;
+            }).join('');
+            updateSelectedCount();
+        } catch(e) {
+            document.getElementById('resume-list').innerHTML = '<div style="color:#EF4444;font-size:13px">Failed to load</div>';
+        }
+    }
+
+    function toggleResume(id, el) {
+        const cb = document.getElementById(`cb-${id}`);
+        cb.checked = !cb.checked;
+        el.classList.toggle('checked', cb.checked);
+        updateSelectedCount();
+    }
+
+    function updateSelectedCount() {
+        const count = document.querySelectorAll('#resume-list input[type=checkbox]:checked').length;
+        document.getElementById('selected-count').textContent = `${count} selected`;
+    }
+
+    function toggleSelectAll() {
+        allSelected = !allSelected;
+        document.querySelectorAll('#resume-list input[type=checkbox]').forEach(cb => {
+            cb.checked = allSelected;
+            document.getElementById(`ri-${cb.value}`).classList.toggle('checked', allSelected);
+        });
+        updateSelectedCount();
+    }
+
+    function getSelectedResumeIds() {
+        return Array.from(document.querySelectorAll('#resume-list input[type=checkbox]:checked'))
+            .map(cb => parseInt(cb.value));
+    }
+
+    async function runScreening() {
+        if (!selectedJobId) { showError('Please select a job opening'); return; }
+        const resumeIds = getSelectedResumeIds();
+        if (!resumeIds.length) { showError('Please select at least one resume'); return; }
+
+        const btn = document.getElementById('screen-btn');
+        const progress = document.getElementById('progress-box');
+        const step = document.getElementById('progress-step');
+        btn.disabled = true; btn.textContent = 'Running...';
+        progress.style.display = 'block';
+        document.getElementById('results-area').innerHTML = '';
+
+        const steps = ['Extracting resume text...','Analyzing job requirements...','Matching candidates with AI...','Saving results...'];
+        let si = 0;
+        const stepInterval = setInterval(() => { step.textContent = steps[si % steps.length]; si++; }, 2500);
+
+        try {
+            const res = await fetch(`${API}/recruitment/screen/${selectedJobId}/`, {
+                method: 'POST',
+                headers: authHeaders(),
+                body: JSON.stringify({ resume_ids: resumeIds })
+            });
+            const data = await res.json();
+            clearInterval(stepInterval);
+            progress.style.display = 'none';
+
+            if (res.ok) {
+                showSuccess(`✅ ${data.message}`);
+                renderResults(data.results);
+            } else {
+                showError(data.message || 'Screening failed');
+            }
+        } catch(e) {
+            clearInterval(stepInterval);
+            progress.style.display = 'none';
+            showError('Something went wrong. Check your LLM API key.');
+        }
+
+        btn.disabled = false; btn.textContent = '🔍 Run AI Screening';
+    }
+
+    function scoreColor(score) {
+        if (score >= 80) return '#10B981';
+        if (score >= 60) return '#F59E0B';
+        if (score >= 40) return '#F97316';
+        return '#EF4444';
+    }
+
+    function renderResults(results) {
+        if (!results || !results.length) {
+            document.getElementById('results-area').innerHTML = '<div style="color:#9CA3AF;padding:24px;text-align:center">No results returned</div>';
+            return;
+        }
+
+        const sorted = [...results].sort((a, b) => b.match_score - a.match_score);
+
+        document.getElementById('results-area').innerHTML = `
+            <div class="result-preview">
+                <div style="padding:16px 20px;border-bottom:1px solid #E5E7EB;display:flex;justify-content:space-between;align-items:center">
+                    <span style="font-size:15px;font-weight:700;color:#111827">🎯 Screening Results</span>
+                    <span style="font-size:13px;color:#6B7280">${sorted.length} candidates evaluated</span>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Candidate</th>
+                            <th>Match Score</th>
+                            <th>Reason</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${sorted.map((r, i) => `
+                        <tr>
+                            <td style="font-weight:800;color:#6B7280">${i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1)}</td>
+                            <td><strong>${r.candidate_name}</strong></td>
+                            <td>
+                                <div class="score-bar-wrap">
+                                    <div class="score-bar-bg">
+                                        <div class="score-bar-fill" style="width:${r.match_score}%;background:${scoreColor(r.match_score)}"></div>
+                                    </div>
+                                    <span class="score-num" style="color:${scoreColor(r.match_score)}">${r.match_score}%</span>
+                                </div>
+                            </td>
+                            <td style="color:#6B7280;font-size:12px;max-width:320px">${r.reason}</td>
+                        </tr>`).join('')}
+                    </tbody>
+                </table>
+            </div>`;
+    }
+
+    loadJobs();
+    loadResumes();
+</script>
+</body>
+</html>
