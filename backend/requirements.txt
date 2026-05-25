@@ -1,0 +1,9 @@
+django
+djangorestframework
+djangorestframework-simplejwt
+python-dotenv
+requests
+pdfplumber
+python-docx
+psycopg2-binary
+groq
