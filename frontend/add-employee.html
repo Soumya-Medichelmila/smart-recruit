@@ -153,10 +153,14 @@
 
             // Roles — hardcoded from DB
             const roleSelect = document.getElementById('role');
-            const knownRoles = [
-                {id:1, name:'Admin'}, {id:2, name:'HR'}, {id:3, name:'Employee'},
-                {id:4, name:'Manager'}, {id:5, name:'Team Lead'}
-            ];
+           const knownRoles = [
+                     {id:1, name:'Admin'},
+                     {id:2, name:'HR'},
+                     {id:3, name:'Employee'},
+                     {id:4, name:'Manager'},
+                     {id:5, name:'Team Lead'},
+                     {id:6, name:'JR_HR'}
+                 ];
             knownRoles.forEach(r => {
                 roleSelect.innerHTML += `<option value="${r.id}">${r.name}</option>`;
             });

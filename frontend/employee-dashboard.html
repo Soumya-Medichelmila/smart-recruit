@@ -29,6 +29,12 @@
         .quick-link h4 { font-size:14px;font-weight:600;margin-bottom:2px; }
         .quick-link p { font-size:12px;color:#6B7280; }
         .sidebar-divider { font-size:10px;color:#6B7280;font-weight:600;text-transform:uppercase;padding:8px 20px 4px;letter-spacing:1px; }
+
+        /* HR-specific quick links */
+        .hr-quick-links-heading {
+            font-size:12px;color:#9CA3AF;font-weight:600;text-transform:uppercase;
+            margin:16px 0 10px;padding-top:12px;border-top:1px solid #F3F4F6;
+        }
     </style>
 </head>
 <body>
@@ -40,18 +46,24 @@
             <p>Employee Portal</p>
         </div>
         <nav class="sidebar-nav">
-            <!-- Common links for all employees -->
             <a href="employee-dashboard.html" class="active"><span class="icon">🏠</span> Dashboard</a>
             <a href="raise-vacancy.html"><span class="icon">📝</span> Raise Vacancy</a>
             <a href="my-requests.html"><span class="icon">📋</span> My Requests</a>
             <a href="job-openings.html"><span class="icon">📢</span> Job Openings</a>
             <a href="change-password.html"><span class="icon">🔑</span> Change Password</a>
 
-            <!-- Recruitment links — hidden by default, shown only for Recruitment dept -->
+            <!-- Recruitment dept links -->
             <div id="recruitment-section" style="display:none">
                 <div class="sidebar-divider">Recruitment</div>
                 <a href="recruitment-resumes.html"><span class="icon">📄</span> Resume Pool</a>
                 <a href="recruitment-screen.html"><span class="icon">🔍</span> Screen Resumes</a>
+            </div>
+
+            <!-- HR role links -->
+            <div id="hr-section" style="display:none">
+                <div class="sidebar-divider">HR Tools</div>
+                <a href="hr-screening-results.html"><span class="icon">📊</span> Screening Results</a>
+                <a href="hr-shortlisted.html"><span class="icon">⭐</span> Shortlisted</a>
             </div>
         </nav>
         <div class="sidebar-footer">
@@ -82,7 +94,6 @@
         </div>
 
         <div class="dashboard-grid">
-            <!-- Left Side -->
             <div>
                 <div class="card">
                     <h3 style="font-size:15px;font-weight:600;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid #F3F4F6">📋 My Details</h3>
@@ -113,11 +124,10 @@
                     </div>
                 </div>
 
-                <!-- Quick Links — changes based on department -->
                 <div class="card">
                     <h3 style="font-size:15px;font-weight:600;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid #F3F4F6">⚡ Quick Actions</h3>
 
-                    <!-- Common quick links -->
+                    <!-- Common links for everyone -->
                     <a href="raise-vacancy.html" class="quick-link">
                         <div class="link-icon">📝</div>
                         <div><h4>Raise Vacancy Request</h4><p>Request when someone resigns</p></div>
@@ -135,11 +145,9 @@
                         <div><h4>Change Password</h4><p>Update your password</p></div>
                     </a>
 
-                    <!-- Recruitment quick links — hidden by default -->
+                    <!-- Recruitment dept extra links -->
                     <div id="recruitment-quick-links" style="display:none">
-                        <div style="font-size:12px;color:#9CA3AF;font-weight:600;text-transform:uppercase;margin:16px 0 10px;padding-top:12px;border-top:1px solid #F3F4F6">
-                            Recruitment Tools
-                        </div>
+                        <div class="hr-quick-links-heading">Recruitment Tools</div>
                         <a href="recruitment-resumes.html" class="quick-link">
                             <div class="link-icon">📄</div>
                             <div><h4>Resume Pool</h4><p>Upload & manage resumes</p></div>
@@ -147,6 +155,19 @@
                         <a href="recruitment-screen.html" class="quick-link">
                             <div class="link-icon">🔍</div>
                             <div><h4>Screen Resumes</h4><p>AI-powered resume screening</p></div>
+                        </a>
+                    </div>
+
+                    <!-- HR role extra links -->
+                    <div id="hr-quick-links" style="display:none">
+                        <div class="hr-quick-links-heading">HR Tools</div>
+                        <a href="hr-screening-results.html" class="quick-link">
+                            <div class="link-icon">📊</div>
+                            <div><h4>Screening Results</h4><p>View & shortlist candidates</p></div>
+                        </a>
+                        <a href="hr-shortlisted.html" class="quick-link">
+                            <div class="link-icon">⭐</div>
+                            <div><h4>Shortlisted Candidates</h4><p>See who you've shortlisted</p></div>
                         </a>
                     </div>
                 </div>
@@ -193,25 +214,40 @@
     const token = localStorage.getItem('access_token');
     if (!token) window.location.href = 'index.html';
 
-    const name = localStorage.getItem('employee_name') || 'Employee';
-    const empId = localStorage.getItem('employee_id');
-    const deptName = localStorage.getItem('department_name') || '';
+    const name       = localStorage.getItem('employee_name') || 'Employee';
+    const empId      = localStorage.getItem('employee_id');
+    const deptName   = localStorage.getItem('department_name') || '';
+    const roleCode   = localStorage.getItem('role_code') || '';
+    const roleName   = localStorage.getItem('role_name') || 'Employee';
 
+    // ── Redirect JR_HR away from this page ──────────────────────────────────
+    if (roleCode === 'JR_HR') {
+        window.location.href = 'jrhr-dashboard.html';
+    }
+
+    // ── Sidebar user info ────────────────────────────────────────────────────
     document.getElementById('user-name').textContent = name;
-    document.getElementById('user-role').textContent = localStorage.getItem('role_name') || 'Employee';
+    document.getElementById('user-role').textContent = roleName;
     document.getElementById('avatar-initials').textContent = name.charAt(0).toUpperCase();
     document.getElementById('welcome-text').textContent = `Welcome back, ${name.split(' ')[0]}! 👋`;
 
-    // Show recruitment links if department is Recruitment
+    // ── Show Recruitment section (dept-based) ────────────────────────────────
     if (deptName.trim().toUpperCase() === 'RECRUITMENT') {
         document.getElementById('recruitment-section').style.display = 'block';
         document.getElementById('recruitment-quick-links').style.display = 'block';
     }
 
+    // ── Show HR section (role-based) ─────────────────────────────────────────
+    if (roleCode === 'HR' || roleCode === 'ADMIN') {
+        document.getElementById('hr-section').style.display = 'block';
+        document.getElementById('hr-quick-links').style.display = 'block';
+    }
+
     function updateTime() {
-        document.getElementById('current-time').textContent = new Date().toLocaleDateString('en-IN', {
-            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-        });
+        document.getElementById('current-time').textContent =
+            new Date().toLocaleDateString('en-IN', {
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+            });
     }
     updateTime();
 
@@ -219,65 +255,69 @@
         return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
     }
 
-    function logout() { localStorage.clear(); window.location.href = 'index.html'; }
+    function logout() {
+        localStorage.clear();
+        window.location.href = 'index.html';
+    }
 
     async function loadProfile() {
         try {
             const [empRes, deptsRes, locsRes, skillsRes] = await Promise.all([
                 fetch(`${API}/accounts/employees/${empId}/`, { headers: authHeaders() }),
-                fetch(`${API}/masters/departments/`, { headers: authHeaders() }),
-                fetch(`${API}/masters/locations/`, { headers: authHeaders() }),
-                fetch(`${API}/masters/skills/`, { headers: authHeaders() }),
+                fetch(`${API}/masters/departments/`,         { headers: authHeaders() }),
+                fetch(`${API}/masters/locations/`,           { headers: authHeaders() }),
+                fetch(`${API}/masters/skills/`,              { headers: authHeaders() }),
             ]);
 
             if (empRes.status === 401) { logout(); return; }
 
-            const emp = await empRes.json();
-            const depts = await deptsRes.json();
-            const locs = await locsRes.json();
+            const emp    = await empRes.json();
+            const depts  = await deptsRes.json();
+            const locs   = await locsRes.json();
             const skills = await skillsRes.json();
 
-            const deptMap = {}; depts.forEach(d => deptMap[d.id] = d.name);
-            const locMap = {}; locs.forEach(l => locMap[l.id] = l.name);
+            const deptMap  = {}; depts.forEach(d  => deptMap[d.id]  = d.name);
+            const locMap   = {}; locs.forEach(l   => locMap[l.id]   = l.name);
             const skillMap = {}; skills.forEach(s => skillMap[s.id] = s.name);
 
             const deptNameResolved = emp.department ? (deptMap[emp.department] || 'Not assigned') : 'Not assigned';
-            const locName = emp.location ? (locMap[emp.location] || 'Not assigned') : 'Not assigned';
-            const roleName = localStorage.getItem('role_name') || 'Not assigned';
+            const locName          = emp.location   ? (locMap[emp.location]    || 'Not assigned') : 'Not assigned';
 
             if (localStorage.getItem('is_password_changed') === 'false') {
                 document.getElementById('password-warning').style.display = 'block';
             }
 
             // Right profile card
-            document.getElementById('profile-avatar').textContent = emp.first_name.charAt(0).toUpperCase();
-            document.getElementById('profile-name').textContent = `${emp.first_name} ${emp.last_name}`;
-            document.getElementById('profile-designation').textContent = emp.designation;
-            document.getElementById('profile-email').textContent = emp.email;
-            document.getElementById('profile-phone').textContent = emp.phone;
-            document.getElementById('profile-role').textContent = roleName;
-            document.getElementById('profile-dept-card').textContent = deptNameResolved;
-            document.getElementById('profile-active').textContent = emp.is_active_employee ? '✅ Active' : '❌ Inactive';
+            document.getElementById('profile-avatar').textContent      = emp.first_name.charAt(0).toUpperCase();
+            document.getElementById('profile-name').textContent         = `${emp.first_name} ${emp.last_name}`;
+            document.getElementById('profile-designation').textContent  = emp.designation;
+            document.getElementById('profile-email').textContent        = emp.email;
+            document.getElementById('profile-phone').textContent        = emp.phone;
+            document.getElementById('profile-role').textContent         = roleName;
+            document.getElementById('profile-dept-card').textContent    = deptNameResolved;
+            document.getElementById('profile-active').textContent       = emp.is_active_employee ? '✅ Active' : '❌ Inactive';
 
             // Left details
-            document.getElementById('details-loading').style.display = 'none';
-            document.getElementById('details-content').style.display = 'block';
-            document.getElementById('detail-code').textContent = emp.employee_code;
+            document.getElementById('details-loading').style.display  = 'none';
+            document.getElementById('details-content').style.display  = 'block';
+            document.getElementById('detail-code').textContent        = emp.employee_code;
             document.getElementById('detail-designation').textContent = emp.designation;
-            document.getElementById('detail-dept').textContent = deptNameResolved;
-            document.getElementById('detail-loc').textContent = locName;
+            document.getElementById('detail-dept').textContent        = deptNameResolved;
+            document.getElementById('detail-loc').textContent         = locName;
 
             const skillsEl = document.getElementById('detail-skills');
             skillsEl.innerHTML = emp.skills && emp.skills.length > 0
                 ? emp.skills.map(sid => `<span class="skill-tag">${skillMap[sid] || sid}</span>`).join('')
                 : '<span style="color:#9CA3AF;font-size:14px">No skills assigned</span>';
 
-        } catch (e) {
+        } catch(e) {
             document.getElementById('details-loading').textContent = 'Failed to load. Please refresh.';
+            console.error(e);
         }
     }
 
     loadProfile();
 </script>
+
 </body>
 </html>

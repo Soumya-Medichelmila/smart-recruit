@@ -96,9 +96,13 @@
             const skills = await skillsRes.json();
 
             const knownRoles = [
-                {id:1, name:'Admin'}, {id:2, name:'HR'}, {id:3, name:'Employee'},
-                {id:4, name:'Manager'}, {id:5, name:'Team Lead'}
-            ];
+                     {id:1, name:'Admin'},
+                     {id:2, name:'HR'},
+                     {id:3, name:'Employee'},
+                     {id:4, name:'Manager'},
+                     {id:5, name:'Team Lead'},
+                     {id:6, name:'JR_HR'}
+                ];
 
             document.getElementById('form-card').innerHTML = `
                 <div class="form-grid">

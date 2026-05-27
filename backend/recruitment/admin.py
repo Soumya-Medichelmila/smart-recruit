@@ -2,7 +2,7 @@ from django.contrib import admin
 
 # Register your models here.
 from django.contrib import admin
-from .models import Resume, ScreeningResult
+from .models import Resume, ScreeningResult,InterviewSchedule
 
 
 @admin.register(Resume)
@@ -20,3 +20,5 @@ class ScreeningResultAdmin(admin.ModelAdmin):
     search_fields = ['candidate_name', 'job_opening__title']
     ordering = ['-match_score']
     readonly_fields = ['screened_at']
+
+admin.site.register(InterviewSchedule)

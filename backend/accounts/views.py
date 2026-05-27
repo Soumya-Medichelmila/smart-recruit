@@ -17,7 +17,7 @@ from .serializers import (
     EmployeeSerializer
 )
 
-from .permissions import IsAdminOrHR
+from .permissions import IsAdminOrHR,IsAdminHROrJuniorHR
 
 
 class LoginView(APIView):
@@ -135,7 +135,7 @@ class EmployeeCreateView(APIView):
 
 class EmployeeListView(APIView):
 
-    permission_classes = [IsAuthenticated, IsAdminOrHR]
+    permission_classes = [IsAuthenticated,IsAdminHROrJuniorHR]
 
     def get(self, request):
         employees = Employee.objects.all()

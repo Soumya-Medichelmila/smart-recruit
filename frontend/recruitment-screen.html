@@ -136,10 +136,8 @@
     const token = localStorage.getItem('access_token');
     const dept = localStorage.getItem('department_name') || '';
 
-    // Auth check
     if (!token) window.location.href = 'index.html';
 
-    // Department check
     if (dept.trim().toUpperCase() !== 'RECRUITMENT') {
         alert('Access denied. Only Recruitment department members can access this page.');
         window.location.href = 'employee-dashboard.html';
@@ -279,10 +277,11 @@
             progress.style.display = 'none';
 
             if (res.ok) {
+                // ✅ data.results is always an array now (never undefined)
                 showSuccess(`✅ ${data.message}`);
                 renderResults(data.results);
             } else {
-                showError(data.message || 'Screening failed');
+                showError(data.error || data.message || 'Screening failed');
             }
         } catch(e) {
             clearInterval(stepInterval);
