@@ -17,31 +17,7 @@
         .job-item-meta { font-size:11px; color:#9CA3AF; }
         .job-item-badge { font-size:10px; font-weight:700; padding:2px 8px; border-radius:20px; background:#FEF3C7; color:#92400E; }
         .right-panel { min-width:0; }
-        .tab-row { display:flex; gap:4px; margin-bottom:20px; background:#F3F4F6; padding:4px; border-radius:10px; width:fit-content; }
-        .tab-pill { padding:7px 18px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; border:none; background:transparent; color:#6B7280; transition:all 0.15s; }
-        .tab-pill.active { background:#fff; color:#4F46E5; box-shadow:0 1px 4px rgba(0,0,0,0.1); }
-        .template-editor { background:#fff; border-radius:16px; border:1px solid #E5E7EB; overflow:hidden; margin-bottom:20px; }
-        .te-header { padding:16px 20px; border-bottom:1px solid #E5E7EB; display:flex; justify-content:space-between; align-items:center; }
-        .te-title { font-size:14px; font-weight:700; color:#111827; }
-        .te-body { padding:20px; }
-        .te-row { margin-bottom:14px; }
-        .te-row label { display:block; font-size:12px; font-weight:700; color:#374151; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px; }
-        .te-row input, .te-row textarea { width:100%; padding:10px 14px; border:1.5px solid #E5E7EB; border-radius:9px; font-size:13px; outline:none; background:#FAFAFA; box-sizing:border-box; transition:border 0.15s; font-family:inherit; }
-        .te-row input:focus, .te-row textarea:focus { border-color:#6366F1; background:#fff; }
-        .te-row textarea { min-height:160px; resize:vertical; }
-        .placeholder-chips { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
-        .ph-chip { background:#EEF2FF; color:#4338CA; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; cursor:pointer; user-select:none; border:1px solid #C7D2FE; transition:all 0.15s; }
-        .ph-chip:hover { background:#6366F1; color:#fff; border-color:#6366F1; }
-        .bulk-form-card { background:#fff; border-radius:16px; border:1px solid #E5E7EB; overflow:hidden; margin-bottom:20px; }
-        .bulk-form-header { padding:16px 20px; border-bottom:1px solid #E5E7EB; background:linear-gradient(135deg,#4F46E5,#7C3AED); color:#fff; }
-        .bulk-form-header-title { font-size:14px; font-weight:700; }
-        .bulk-form-header-sub { font-size:12px; opacity:0.85; margin-top:2px; }
-        .bulk-form-body { padding:20px; }
-        .bulk-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
-        .bulk-grid .full { grid-column:1/-1; }
-        .bf-group label { display:block; font-size:12px; font-weight:700; color:#374151; margin-bottom:5px; }
-        .bf-group input, .bf-group select { width:100%; padding:10px 13px; border:1.5px solid #E5E7EB; border-radius:9px; font-size:13px; outline:none; background:#FAFAFA; box-sizing:border-box; }
-        .bf-group input:focus, .bf-group select:focus { border-color:#6366F1; background:#fff; }
+        
         .cand-card { background:#fff; border-radius:14px; border:1px solid #E5E7EB; margin-bottom:14px; overflow:hidden; }
         .cand-card.scheduled { border-left:4px solid #10B981; }
         .cand-header { padding:14px 18px; border-bottom:1px solid #F3F4F6; display:flex; justify-content:space-between; align-items:center; }
@@ -58,11 +34,6 @@
         .email-result.err { background:#FEE2E2; color:#991B1B; display:block; }
         .score-pill { padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700; color:#fff; }
         .scheduled-tag { background:#D1FAE5; color:#065F46; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700; }
-        .iv-email-panel { background:#FFF7ED; border:1px solid #FED7AA; border-radius:14px; padding:20px; margin-bottom:20px; }
-        .iv-email-title { font-size:14px; font-weight:700; color:#9A3412; margin-bottom:6px; }
-        .iv-email-sub { font-size:13px; color:#92400E; margin-bottom:14px; }
-        .iv-email-form { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; }
-        .iv-email-form select { padding:9px 12px; border:1.5px solid #FED7AA; border-radius:8px; font-size:13px; background:#fff; outline:none; min-width:220px; }
         .no-job { text-align:center; padding:80px 24px; background:#fff; border-radius:16px; border:1px dashed #E5E7EB; color:#9CA3AF; }
 
         /* ── Round Email Modal ──────────────────────────── */
@@ -226,7 +197,6 @@ let allEmployees      = [];
 let currentShortlists = [];
 let selectedJobId     = null;
 let selectedJobTitle  = '';
-let activeTab         = 'bulk';
 let modalShortlistId  = null;   // tracks which candidate the modal is for
 
 const DEFAULT_SUBJECT = 'Interview Invitation — {job_title} at {company}';
@@ -244,17 +214,6 @@ Location    : {link_or_venue}
 ━━━━━━━━━━━━━━━━━━━━━━━━
 
 Please confirm your availability by replying to this email.
-
-Best regards,
-SynergyCom HR Team`;
-
-const DEFAULT_BULK_SUBJECT = 'Important Update — {job_title} at {company}';
-const DEFAULT_BULK_BODY =
-`Dear {candidate_name},
-
-We are reaching out regarding your application for the position of {job_title} at {company}.
-
-We would like to share some important information with you. Please stay tuned for further updates.
 
 Best regards,
 SynergyCom HR Team`;
@@ -396,55 +355,10 @@ function renderRightPanel() {
                 <span style="font-weight:800;font-size:18px;color:#065F46">${done}</span> Scheduled
             </div>
         </div>
-        <div class="tab-row">
-            <button class="tab-pill ${activeTab==='bulk'?'active':''}"       onclick="switchTab('bulk')">📧 Bulk Schedule</button>
-            <button class="tab-pill ${activeTab==='individual'?'active':''}" onclick="switchTab('individual')">👤 Individual</button>
-            <button class="tab-pill ${activeTab==='interviewer'?'active':''}" onclick="switchTab('interviewer')">📨 Interviewer Email</button>
-        </div>
+        
         <div id="tab-content">
-            ${activeTab==='bulk' ? renderBulkTab(ivOpts) : activeTab==='individual' ? renderIndividualTab(empOpts) : renderInterviewerTab(ivOpts)}
+            ${renderIndividualTab(empOpts)}
         </div>`;
-}
-
-function switchTab(t) { activeTab = t; renderRightPanel(); }
-
-// ── Bulk Tab ──────────────────────────────────────────────────────────────────
-function renderBulkTab(ivOpts) {
-    const total     = currentShortlists.length;
-    const withEmail = currentShortlists.filter(s => s.candidate_email).length;
-    const noEmail   = total - withEmail;
-    return `
-    <div class="template-editor">
-        <div class="te-header">
-            <div class="te-title">📧 Bulk Email — All Shortlisted Candidates</div>
-            <button onclick="resetBulkTemplate()" style="font-size:12px;color:#6366F1;background:none;border:none;cursor:pointer;font-weight:600">↺ Reset</button>
-        </div>
-        <div class="te-body">
-            <div style="background:#EEF2FF;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#3730A3;line-height:1.6">
-                ℹ️ Sends email to <strong>all ${total} shortlisted candidates</strong> — scheduled or not.
-                ${noEmail > 0
-                    ? '<br><span style="color:#DC2626">⚠️ ' + noEmail + ' candidate' + (noEmail>1?'s have':' has') + ' no email extracted from resume — will be skipped.</span>'
-                    : '<br><span style="color:#059669">✅ All candidates have emails.</span>'}
-            </div>
-            <p style="font-size:12px;font-weight:700;color:#374151;margin-bottom:6px">Click to insert placeholder:</p>
-            <div class="placeholder-chips">
-                ${['{candidate_name}','{job_title}','{company}']
-                    .map(p => '<span class="ph-chip" onclick="insertBulkPlaceholder(\'' + p + '\')">' + p + '</span>').join('')}
-            </div>
-            <div class="te-row"><label>Subject</label><input type="text" id="bulk-email-subj" value="${DEFAULT_BULK_SUBJECT}" /></div>
-            <div class="te-row"><label>Body</label><textarea id="bulk-email-body" rows="10">${DEFAULT_BULK_BODY}</textarea></div>
-            <div style="margin-top:4px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-                <button class="btn btn-primary" id="bulk-btn" onclick="runBulkEmail()">
-                    📧 Send to All ${total} Candidates
-                </button>
-                <span style="font-size:12px;color:#9CA3AF">
-                    ✉️ ${withEmail} email${withEmail!==1?'s':''} will be sent
-                    ${noEmail > 0 ? '· ' + noEmail + ' skipped (no email)' : ''}
-                </span>
-            </div>
-            <div id="bulk-result" style="margin-top:14px"></div>
-        </div>
-    </div>`;
 }
 
 // ── Individual Tab ────────────────────────────────────────────────────────────
@@ -516,113 +430,11 @@ function renderIndividualTab(empOpts) {
     </div>`).join('');
 }
 
-// ── Interviewer Tab ───────────────────────────────────────────────────────────
-function renderInterviewerTab(ivOpts) {
-    return `
-    <div class="iv-email-panel">
-        <div class="iv-email-title">📨 Send Consolidated Interviewer Email</div>
-        <div class="iv-email-sub">Send ONE email to an interviewer with full details of all their assigned candidates.</div>
-        <div class="iv-email-form">
-            <div>
-                <label style="font-size:12px;font-weight:700;color:#92400E;display:block;margin-bottom:5px">Select Interviewer</label>
-                <select id="iv-email-select">${ivOpts}</select>
-            </div>
-            <button class="btn btn-primary" onclick="sendInterviewerEmail()" style="background:#EA580C;border-color:#EA580C">📨 Send Email</button>
-        </div>
-        <div id="iv-email-result" style="margin-top:12px"></div>
-    </div>
-    <div style="background:#fff;border-radius:14px;border:1px solid #E5E7EB;overflow:hidden">
-        <div style="padding:14px 18px;border-bottom:1px solid #E5E7EB;font-size:14px;font-weight:700;color:#111827">📋 Scheduled Interviews</div>
-        ${currentShortlists.filter(s=>s.has_interview).length === 0
-            ? '<div style="padding:32px;text-align:center;color:#9CA3AF;font-size:13px">No interviews scheduled yet</div>'
-            : `<table style="width:100%;border-collapse:collapse">
-                <thead><tr>
-                    <th style="background:#F9FAFB;padding:10px 16px;text-align:left;font-size:11px;font-weight:700;color:#6B7280;border-bottom:1px solid #E5E7EB">Candidate</th>
-                    <th style="background:#F9FAFB;padding:10px 16px;text-align:left;font-size:11px;font-weight:700;color:#6B7280;border-bottom:1px solid #E5E7EB">Score</th>
-                    <th style="background:#F9FAFB;padding:10px 16px;text-align:left;font-size:11px;font-weight:700;color:#6B7280;border-bottom:1px solid #E5E7EB">Status</th>
-                </tr></thead>
-                <tbody>
-                    ${currentShortlists.filter(s=>s.has_interview).map(s=>`
-                    <tr>
-                        <td style="padding:12px 16px;border-bottom:1px solid #F3F4F6">
-                            <div style="font-size:13px;font-weight:700">${s.candidate_name}</div>
-                            <div style="font-size:11px;color:#9CA3AF">${s.candidate_email||'No email'}</div>
-                        </td>
-                        <td style="padding:12px 16px;border-bottom:1px solid #F3F4F6">
-                            <span style="background:${scoreColor(s.match_score)};color:#fff;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">${s.match_score}%</span>
-                        </td>
-                        <td style="padding:12px 16px;border-bottom:1px solid #F3F4F6">
-                            <span style="background:#D1FAE5;color:#065F46;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">✅ Scheduled</span>
-                        </td>
-                    </tr>`).join('')}
-                </tbody>
-            </table>`
-        }
-    </div>`;
-}
-
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function toggleIndMode(sid) {
     const m = document.getElementById(`m-${sid}`)?.value;
     document.getElementById(`lnk-${sid}`).style.display = m==='ONLINE'?'block':'none';
     document.getElementById(`ven-${sid}`).style.display = m==='OFFLINE'?'block':'none';
-}
-function insertPlaceholder(ph) {
-    const ta = document.getElementById('tpl-body'); if (!ta) return;
-    const s = ta.selectionStart, e = ta.selectionEnd;
-    ta.value = ta.value.slice(0,s)+ph+ta.value.slice(e);
-    ta.focus(); ta.setSelectionRange(s+ph.length, s+ph.length);
-}
-function resetTemplate() {
-    document.getElementById('tpl-subject').value = DEFAULT_SUBJECT;
-    document.getElementById('tpl-body').value    = DEFAULT_BODY;
-}
-function resetBulkTemplate() {
-    document.getElementById('bulk-email-subj').value = DEFAULT_BULK_SUBJECT;
-    document.getElementById('bulk-email-body').value = DEFAULT_BULK_BODY;
-}
-function insertBulkPlaceholder(ph) {
-    const ta = document.getElementById('bulk-email-body'); if (!ta) return;
-    const s = ta.selectionStart, e = ta.selectionEnd;
-    ta.value = ta.value.slice(0,s)+ph+ta.value.slice(e);
-    ta.focus(); ta.setSelectionRange(s+ph.length, s+ph.length);
-}
-
-// ── Actions ───────────────────────────────────────────────────────────────────
-async function runBulkEmail() {
-    const subj = document.getElementById('bulk-email-subj')?.value?.trim();
-    const body = document.getElementById('bulk-email-body')?.value?.trim();
-    if (!subj || !body) { showError('Please fill in the email subject and body'); return; }
-
-    const total = currentShortlists.length;
-    if (!confirm(`Send email to all ${total} shortlisted candidates for this job?`)) return;
-
-    const btn = document.getElementById('bulk-btn');
-    btn.disabled = true; btn.textContent = '⏳ Sending...';
-
-    try {
-        const res = await apiFetch(`${API}/recruitment/interview/bulk-email/`, {
-            method: 'POST',
-            body: JSON.stringify({
-                job_id: selectedJobId,
-                email_subject: subj,
-                email_body: body,
-            })
-        });
-        if (!res) return;
-        const data = await res.json();
-        const el = document.getElementById('bulk-result');
-        if (res.ok) {
-            el.innerHTML = `<div style="background:#D1FAE5;border-radius:10px;padding:14px 18px;font-size:13px;color:#065F46">
-                📧 <strong>${data.sent}</strong> email${data.sent!==1?'s':''} sent successfully
-                ${data.skipped > 0 ? ' &nbsp;·&nbsp; ⏭ <strong>' + data.skipped + '</strong> skipped (no email)' : ''}
-            </div>`;
-            showSuccess('Bulk emails sent!');
-        } else {
-            el.innerHTML = `<div style="background:#FEE2E2;border-radius:10px;padding:14px;font-size:13px;color:#991B1B">❌ ${data.error||data.message||'Failed'}</div>`;
-        }
-    } catch { showError('Something went wrong'); }
-    btn.disabled = false; btn.textContent = `📧 Send to All ${total} Candidates`;
 }
 
 async function scheduleOne(sid) {
@@ -655,25 +467,6 @@ async function scheduleOne(sid) {
             btn.disabled = false; btn.textContent = '📅 Schedule & Send Email';
         }
     } catch { showError('Something went wrong'); btn.disabled=false; btn.textContent='📅 Schedule & Send Email'; }
-}
-
-async function sendInterviewerEmail() {
-    const ivId = document.getElementById('iv-email-select')?.value;
-    if (!ivId) { showError('Please select an interviewer'); return; }
-    const el = document.getElementById('iv-email-result');
-    el.innerHTML = '<span style="color:#9CA3AF;font-size:13px">Sending...</span>';
-    try {
-        const res = await apiFetch(`${API}/recruitment/interview/send-interviewer-email/`, {
-            method:'POST', body: JSON.stringify({ job_id:selectedJobId, interviewer_id:parseInt(ivId) })
-        });
-        if (!res) return;
-        const data = await res.json();
-        el.innerHTML = res.ok && data.sent
-            ? '<div style="background:#D1FAE5;border-radius:8px;padding:10px 14px;font-size:13px;color:#065F46">📨 Interviewer email sent!</div>'
-            : `<div style="background:#FEE2E2;border-radius:8px;padding:10px 14px;font-size:13px;color:#991B1B">⚠️ ${data.message||'Failed'}</div>`;
-    } catch {
-        el.innerHTML = '<div style="background:#FEE2E2;border-radius:8px;padding:10px 14px;font-size:13px;color:#991B1B">Something went wrong</div>';
-    }
 }
 
 async function init() { await loadEmployees(); await loadJobs(); }

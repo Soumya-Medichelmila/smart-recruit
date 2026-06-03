@@ -5,6 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Synergy — Admin Dashboard</title>
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        .kanban-quick-card {
+            background: linear-gradient(135deg, #1E1B4B 0%, #312E81 60%, #4338CA 100%);
+            border-radius: 12px; padding: 16px 18px; color: white;
+            display: flex; align-items: center; gap: 14px;
+            text-decoration: none; transition: all .2s;
+            border: 1px solid rgba(99,102,241,.3);
+        }
+        .kanban-quick-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(79,70,229,.3); }
+        .kanban-quick-card .quick-action-icon { background: rgba(255,255,255,.15) !important; font-size: 20px; }
+        .kanban-quick-card h4 { color: #fff !important; }
+        .kanban-quick-card p  { color: rgba(255,255,255,.75) !important; }
+    </style>
 </head>
 <body>
 <div class="layout">
@@ -21,6 +34,7 @@
             <a href="vacancy-requests.html"><span class="icon">📝</span> Vacancy Requests</a>
             <a href="admin-job-openings.html"><span class="icon">📢</span> Job Openings</a>
             <a href="hr-screening-results.html"><span class="icon">🎯</span> Screening Results</a>
+            <a href="jrhr-kanban.html"><span class="icon">📋</span> Recruitment Board</a>
             <a href="admin-change-password.html"><span class="icon">🔑</span> Change Password</a>
         </nav>
         <div class="sidebar-footer">
@@ -97,6 +111,10 @@
                         <div class="quick-action-icon" style="background:#F5F3FF">🎯</div>
                         <div><h4>Screening Results</h4><p>AI resume matches</p></div>
                     </a>
+                    <a href="jrhr-kanban.html" class="quick-action-card kanban-quick-card">
+                        <div class="quick-action-icon">📋</div>
+                        <div><h4>Recruitment Board</h4><p>Kanban ATS pipeline</p></div>
+                    </a>
                 </div>
 
                 <!-- Recent Employees -->
@@ -157,57 +175,58 @@
 </div>
 
 <script>
-    const API = 'http://127.0.0.1:8000/api';
+    const API   = 'http://127.0.0.1:8000/api';
     const token = localStorage.getItem('access_token');
-    const role = localStorage.getItem('role_code');
+    const role  = localStorage.getItem('role_code');
+
     if (!token) window.location.href = 'index.html';
     if (role !== 'ADMIN' && role !== 'HR') window.location.href = 'employee-dashboard.html';
 
-    const name = localStorage.getItem('employee_name') || 'Admin';
+    const name  = localStorage.getItem('employee_name') || 'Admin';
     const empId = localStorage.getItem('employee_id');
-    document.getElementById('user-name').textContent = name;
-    document.getElementById('user-role').textContent = localStorage.getItem('role_name') || 'Admin';
+    document.getElementById('user-name').textContent       = name;
+    document.getElementById('user-role').textContent       = localStorage.getItem('role_name') || 'Admin';
     document.getElementById('avatar-initials').textContent = name.charAt(0).toUpperCase();
-    document.getElementById('welcome-text').textContent = `Welcome back, ${name.split(' ')[0]}! 👋`;
+    document.getElementById('welcome-text').textContent    = `Welcome back, ${name.split(' ')[0]}! 👋`;
 
     function updateTime() {
         const now = new Date();
-        document.getElementById('current-time').textContent = now.toLocaleDateString('en-IN', { weekday:'long',year:'numeric',month:'long',day:'numeric' });
+        document.getElementById('current-time').textContent =
+            now.toLocaleDateString('en-IN', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
     }
     updateTime();
 
     function authHeaders() {
         return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
     }
-
     function logout() { localStorage.clear(); window.location.href = 'index.html'; }
 
     async function loadDashboard() {
         try {
             const [empRes, deptRes, locRes, skillRes, vacRes, jobRes, myRes, screenRes] = await Promise.all([
-                fetch(`${API}/accounts/employees/`, { headers: authHeaders() }),
-                fetch(`${API}/masters/departments/`, { headers: authHeaders() }),
-                fetch(`${API}/masters/locations/`, { headers: authHeaders() }),
-                fetch(`${API}/masters/skills/`, { headers: authHeaders() }),
-                fetch(`${API}/jobs/vacancy-requests/`, { headers: authHeaders() }),
-                fetch(`${API}/jobs/openings/`, { headers: authHeaders() }),
+                fetch(`${API}/accounts/employees/`,          { headers: authHeaders() }),
+                fetch(`${API}/masters/departments/`,         { headers: authHeaders() }),
+                fetch(`${API}/masters/locations/`,           { headers: authHeaders() }),
+                fetch(`${API}/masters/skills/`,              { headers: authHeaders() }),
+                fetch(`${API}/jobs/vacancy-requests/`,       { headers: authHeaders() }),
+                fetch(`${API}/jobs/openings/`,               { headers: authHeaders() }),
                 fetch(`${API}/accounts/employees/${empId}/`, { headers: authHeaders() }),
-                fetch(`${API}/recruitment/results/`, { headers: authHeaders() }),
+                fetch(`${API}/recruitment/results/`,         { headers: authHeaders() }),
             ]);
 
             if (empRes.status === 401) { logout(); return; }
 
-            const employees  = await empRes.json();
-            const depts      = await deptRes.json();
-            const locs       = await locRes.json();
-            const skills     = await skillRes.json();
-            const vacancies  = await vacRes.json();
-            const jobs       = await jobRes.json();
-            const me         = await myRes.json();
-            const screened   = screenRes.ok ? await screenRes.json() : [];
+            const employees = await empRes.json();
+            const depts     = await deptRes.json();
+            const locs      = await locRes.json();
+            const skills    = await skillRes.json();
+            const vacancies = await vacRes.json();
+            const jobs      = await jobRes.json();
+            const me        = await myRes.json();
+            const screened  = screenRes.ok ? await screenRes.json() : [];
 
-            const deptMap = {}; depts.forEach(d => deptMap[d.id] = d.name);
-            const locMap  = {}; locs.forEach(l => locMap[l.id] = l.name);
+            const deptMap  = {}; depts.forEach(d  => deptMap[d.id]  = d.name);
+            const locMap   = {}; locs.forEach(l   => locMap[l.id]   = l.name);
             const skillMap = {}; skills.forEach(s => skillMap[s.id] = s.name);
 
             const active   = employees.filter(e => e.is_active_employee).length;
@@ -215,12 +234,11 @@
             const openJobs = jobs.filter(j => j.status === 'OPEN').length;
 
             document.getElementById('total-employees').textContent  = employees.length;
-            document.getElementById('active-employees').textContent  = active;
-            document.getElementById('pending-requests').textContent  = pending;
-            document.getElementById('open-jobs').textContent         = openJobs;
-            document.getElementById('screened-jobs').textContent     = screened.length;
+            document.getElementById('active-employees').textContent = active;
+            document.getElementById('pending-requests').textContent = pending;
+            document.getElementById('open-jobs').textContent        = openJobs;
+            document.getElementById('screened-jobs').textContent    = screened.length;
 
-            // Recent employees table
             const tbody  = document.getElementById('recent-employees');
             const recent = employees.slice(-5).reverse();
             tbody.innerHTML = recent.length === 0
@@ -233,7 +251,6 @@
                         <td><span class="badge ${e.is_active_employee ? 'badge-success' : 'badge-danger'}">${e.is_active_employee ? 'Active' : 'Inactive'}</span></td>
                     </tr>`).join('');
 
-            // Profile card
             document.getElementById('profile-avatar').textContent      = me.first_name.charAt(0).toUpperCase();
             document.getElementById('profile-name').textContent        = `${me.first_name} ${me.last_name}`;
             document.getElementById('profile-designation').textContent = me.designation;
@@ -242,14 +259,14 @@
             document.getElementById('profile-phone').textContent       = me.phone;
             document.getElementById('profile-role').textContent        = localStorage.getItem('role_name') || '-';
             document.getElementById('profile-dept').textContent        = me.department ? (deptMap[me.department] || '-') : 'Not assigned';
-            document.getElementById('profile-loc').textContent         = me.location  ? (locMap[me.location]   || '-') : 'Not assigned';
+            document.getElementById('profile-loc').textContent         = me.location   ? (locMap[me.location]   || '-') : 'Not assigned';
 
             const skillsEl = document.getElementById('profile-skills');
             skillsEl.innerHTML = me.skills && me.skills.length > 0
                 ? me.skills.map(sid => `<span class="skill-tag">${skillMap[sid] || sid}</span>`).join('')
                 : '<span style="color:#9CA3AF;font-size:13px">No skills</span>';
 
-        } catch (e) { console.error(e); }
+        } catch(e) { console.error(e); }
     }
 
     loadDashboard();

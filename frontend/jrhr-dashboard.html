@@ -29,6 +29,27 @@
         .stat-info h3 { font-size: 24px; font-weight: 800; color: #111827; margin-bottom: 2px; }
         .stat-info p  { font-size: 13px; color: #6B7280; }
 
+        /* Kanban CTA banner */
+        .kanban-cta {
+            background: linear-gradient(135deg, #1E1B4B 0%, #312E81 60%, #4338CA 100%);
+            border-radius: 14px; padding: 20px 24px; color: white;
+            margin-bottom: 24px; display: flex; align-items: center;
+            justify-content: space-between; gap: 16px;
+            border: 1px solid rgba(99,102,241,.3);
+            cursor: pointer; transition: all .2s;
+        }
+        .kanban-cta:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(79,70,229,.3); }
+        .kanban-cta-left h3 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+        .kanban-cta-left p  { font-size: 13px; opacity: .85; }
+        .kanban-cta-btn {
+            background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.3);
+            color: #fff; font-weight: 700; font-size: 13px;
+            padding: 9px 18px; border-radius: 9px; cursor: pointer;
+            white-space: nowrap; transition: all .15s;
+            text-decoration: none; display: inline-block;
+        }
+        .kanban-cta-btn:hover { background: rgba(255,255,255,.25); }
+
         /* Job cards grid */
         .jobs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
         .job-card  {
@@ -64,6 +85,7 @@
         <nav class="sidebar-nav">
             <a href="jrhr-dashboard.html" class="active"><span class="icon">🏠</span> Dashboard</a>
             <a href="jrhr-interview-schedule.html"><span class="icon">📅</span> Schedule Interviews</a>
+            <a href="jrhr-kanban.html"><span class="icon">🎯</span> Recruitment Board</a>
             <a href="jrhr-interview-list.html"><span class="icon">📋</span> All Interviews</a>
             <a href="job-openings.html"><span class="icon">📢</span> Job Openings</a>
             <a href="change-password.html"><span class="icon">🔑</span> Change Password</a>
@@ -105,6 +127,15 @@
             </div>
         </div>
 
+        <!-- Kanban CTA -->
+        <div class="kanban-cta" onclick="window.location.href='jrhr-kanban.html'">
+            <div class="kanban-cta-left">
+                <h3>🎯 Recruitment Kanban Board</h3>
+                <p>Drag & drop candidates through Shortlisted → Scheduled → Selected → Rejected</p>
+            </div>
+            <a href="jrhr-kanban.html" class="kanban-cta-btn" onclick="event.stopPropagation()">Open Board →</a>
+        </div>
+
         <div class="card">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
                 <p class="card-title" style="margin:0">Jobs with Shortlisted Candidates</p>
@@ -127,10 +158,10 @@
     if (role !== 'JR_HR') window.location.href = 'employee-dashboard.html';
 
     const name = localStorage.getItem('employee_name') || 'Junior HR';
-    document.getElementById('user-name').textContent    = name;
-    document.getElementById('user-role').textContent    = localStorage.getItem('role_name') || 'Junior HR';
+    document.getElementById('user-name').textContent       = name;
+    document.getElementById('user-role').textContent       = localStorage.getItem('role_name') || 'Junior HR';
     document.getElementById('avatar-initials').textContent = name.charAt(0).toUpperCase();
-    document.getElementById('welcome-text').textContent = `Welcome back, ${name.split(' ')[0]}! 👋`;
+    document.getElementById('welcome-text').textContent    = `Welcome back, ${name.split(' ')[0]}! 👋`;
 
     function authHeaders() {
         return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
@@ -157,7 +188,6 @@
             const openJobs = await openJobsRes.json();
             const intJobs  = await intJobsRes.json();
 
-            // Build interview count map per job
             const intMap = {};
             intJobs.forEach(j => intMap[j.job_id] = j.interview_count);
 
@@ -181,8 +211,7 @@
             }
 
             container.innerHTML = `<div class="jobs-grid">${jobs.map(j => {
-                const intCount  = intMap[j.job_id] || 0;
-                const remaining = j.shortlist_count - intCount;
+                const intCount = intMap[j.job_id] || 0;
                 return `
                 <div class="job-card" onclick="goToSchedule(${j.job_id}, '${j.job_title.replace(/'/g,"\\'")}')">
                     <div class="job-card-top">
@@ -196,7 +225,8 @@
                         <div class="interviews-done">
                             <span>${intCount}</span> of ${j.shortlist_count} interviews scheduled
                         </div>
-                        <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();goToSchedule(${j.job_id}, '${j.job_title.replace(/'/g,"\\'")}')">
+                        <button class="btn btn-primary btn-sm"
+                            onclick="event.stopPropagation();goToSchedule(${j.job_id}, '${j.job_title.replace(/'/g,"\\'")}')">
                             📅 Schedule
                         </button>
                     </div>

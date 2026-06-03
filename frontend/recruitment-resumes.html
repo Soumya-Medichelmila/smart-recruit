@@ -4,50 +4,23 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Synergy — Resume Pool</title>
-
     <link rel="stylesheet" href="css/style.css">
-
     <style>
-        .upload-card {
-            background:#fff;
-            border-radius:16px;
-            padding:28px;
-            border:1px solid #E5E7EB;
-            box-shadow:0 1px 6px rgba(0,0,0,0.06);
-            margin-bottom:28px;
-        }
-
-        .drop-zone {
-            border:2px dashed #C7D2FE;
-            border-radius:12px;
-            padding:36px;
-            text-align:center;
-            background:#F5F7FF;
-            cursor:pointer;
-            transition:all 0.2s;
-            margin-bottom:16px;
-        }
-
-        .drop-zone:hover,
-        .drop-zone.dragover {
-            border-color:#6366F1;
+        .info-card {
             background:#EEF2FF;
+            border-radius:12px;
+            padding:20px;
+            border:1px solid #C7D2FE;
+            margin-bottom:24px;
+            display:flex;
+            align-items:center;
+            gap:16px;
         }
-
-        .drop-zone-icon { font-size:40px; margin-bottom:10px; }
-        .drop-zone-text { font-size:14px; color:#6B7280; }
-        .drop-zone-text strong { color:#6366F1; }
-
-        /* ── only name + button now ── */
-        .form-row {
-            display:grid;
-            grid-template-columns:1fr auto;
-            gap:12px;
-            align-items:end;
-        }
+        .info-icon { font-size:32px; }
+        .info-text h4 { margin:0 0 4px 0; font-size:15px; color:#3730A3; }
+        .info-text p { margin:0; font-size:13px; color:#4338CA; opacity:0.8; }
 
         .resume-table { width:100%; border-collapse:collapse; }
-
         .resume-table th {
             background:#F9FAFB;
             padding:12px 16px;
@@ -59,7 +32,6 @@
             text-transform:uppercase;
             border-bottom:1px solid #E5E7EB;
         }
-
         .resume-table td {
             padding:14px 16px;
             border-bottom:1px solid #F3F4F6;
@@ -67,22 +39,19 @@
             color:#374151;
             vertical-align:middle;
         }
-
         .resume-table tr:last-child td { border-bottom:none; }
         .resume-table tr:hover td { background:#FAFAFA; }
-
         .file-badge {
             display:inline-flex;
             align-items:center;
             gap:6px;
-            background:#EEF2FF;
-            color:#4338CA;
+            background:#F3F4F6;
+            color:#4B5563;
             padding:4px 10px;
             border-radius:8px;
             font-size:12px;
             font-weight:600;
         }
-
         .table-card {
             background:#fff;
             border-radius:16px;
@@ -90,7 +59,6 @@
             box-shadow:0 1px 6px rgba(0,0,0,0.06);
             overflow:hidden;
         }
-
         .table-header {
             padding:18px 24px;
             border-bottom:1px solid #E5E7EB;
@@ -98,33 +66,16 @@
             justify-content:space-between;
             align-items:center;
         }
-
         .table-title { font-size:16px; font-weight:700; color:#111827; }
-
         .count-badge {
-            background:#EEF2FF;
-            color:#4338CA;
+            background:#F3F4F6;
+            color:#374151;
             padding:4px 12px;
             border-radius:20px;
             font-size:13px;
             font-weight:600;
         }
-
-        .btn-del {
-            background:none;
-            border:1px solid #FCA5A5;
-            color:#DC2626;
-            padding:5px 12px;
-            border-radius:8px;
-            font-size:12px;
-            cursor:pointer;
-            transition:all 0.15s;
-        }
-
-        .btn-del:hover { background:#FEE2E2; }
-
         .empty-row td { text-align:center; padding:48px; color:#9CA3AF; }
-
         .sidebar-divider {
             font-size:10px;
             color:#6B7280;
@@ -133,45 +84,8 @@
             padding:8px 20px 4px;
             letter-spacing:1px;
         }
-
-        .form-group label {
-            display:block;
-            margin-bottom:6px;
-            font-size:13px;
-            font-weight:600;
-            color:#374151;
-        }
-
-        .form-group input {
-            width:100%;
-            padding:10px 12px;
-            border:1px solid #D1D5DB;
-            border-radius:10px;
-            font-size:14px;
-            outline:none;
-            box-sizing:border-box;
-        }
-
-        .form-group input:focus { border-color:#6366F1; }
-
-        .auto-email-note {
-            font-size:12px;
-            color:#6B7280;
-            margin-top:10px;
-            display:flex;
-            align-items:center;
-            gap:6px;
-        }
-
-        .email-extracted {
-            font-size:12px;
-            color:#059669;
-            font-weight:600;
-            margin-top:6px;
-        }
     </style>
 </head>
-
 <body>
 
 <div class="layout">
@@ -220,76 +134,35 @@
         <div class="alert alert-success" id="success-alert"></div>
         <div class="alert alert-error"   id="error-alert"></div>
 
-        <!-- UPLOAD CARD -->
-        <div class="upload-card">
-
-            <p style="font-size:15px;font-weight:700;color:#111827;margin-bottom:16px">
-                Upload New Resume
-            </p>
-
-            <div class="drop-zone"
-                 id="drop-zone"
-                 onclick="document.getElementById('file-input').click()">
-
-                <div class="drop-zone-icon">📎</div>
-                <div class="drop-zone-text">
-                    <strong>Click to upload</strong> or drag & drop<br>
-                    <span style="font-size:12px;margin-top:4px;display:block">PDF or DOCX — Max 5MB</span>
-                </div>
-                <div id="file-name" style="margin-top:12px;font-size:13px;color:#6366F1;font-weight:600"></div>
+        <!-- INFO CARD (Replacing Upload) -->
+        <div class="info-card">
+            <div class="info-icon">📂</div>
+            <div class="info-text">
+                <h4>Folder-Based Resume Processing</h4>
+                <p>Resumes are automatically read from the configured server directory. Go to <strong>Screen Resumes</strong> to process them.</p>
             </div>
-
-            <input type="file"
-                   id="file-input"
-                   accept=".pdf,.docx,.doc"
-                   style="display:none"
-                   onchange="onFileSelect(this)" />
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Candidate Name *</label>
-                    <input type="text" id="candidate-name" placeholder="e.g. Ravi Kumar" />
-                </div>
-
-                <div style="display:flex;align-items:flex-end">
-                    <button class="btn btn-primary"
-                            onclick="uploadResume()"
-                            id="upload-btn"
-                            style="white-space:nowrap">
-                        ⬆️ Upload Resume
-                    </button>
-                </div>
-            </div>
-
-            <p class="auto-email-note">
-                🤖 <span>Candidate email is automatically extracted from the resume file — no need to enter it manually.</span>
-            </p>
-
         </div>
 
         <!-- TABLE -->
         <div class="table-card">
 
             <div class="table-header">
-                <span class="table-title">All Resumes</span>
-                <span class="count-badge" id="resume-count">0 resumes</span>
+                <span class="table-title">Available Resumes</span>
+                <span class="count-badge" id="resume-count">0 files</span>
             </div>
 
             <table class="resume-table">
                 <thead>
                     <tr>
                         <th>#</th>
-                        <th>Candidate Name</th>
-                        <th>Email (auto-extracted)</th>
-                        <th>File</th>
-                        <th>Uploaded By</th>
-                        <th>Date</th>
-                        <th>Action</th>
+                        <th>Filename</th>
+                        <th>Type</th>
+                        <th>Status</th>
                     </tr>
                 </thead>
                 <tbody id="resume-tbody">
                     <tr class="empty-row">
-                        <td colspan="7">Loading resumes...</td>
+                        <td colspan="4">Loading resumes...</td>
                     </tr>
                 </tbody>
             </table>
@@ -318,7 +191,6 @@ document.getElementById('user-role').textContent       = localStorage.getItem('r
 document.getElementById('avatar-initials').textContent = name.charAt(0).toUpperCase();
 
 function authHeaders() {
-    // ✅ NO Content-Type here — browser sets it automatically for FormData
     return { 'Authorization': `Bearer ${token}` };
 }
 
@@ -338,136 +210,39 @@ function showError(msg) {
     setTimeout(() => el.classList.remove('show'), 3500);
 }
 
-let selectedFile = null;
-
-function onFileSelect(input) {
-    selectedFile = input.files[0];
-    if (selectedFile) {
-        document.getElementById('file-name').textContent = '✅ ' + selectedFile.name;
-    }
-}
-
-// Drag & drop
-const dz = document.getElementById('drop-zone');
-dz.addEventListener('dragover',  e => { e.preventDefault(); dz.classList.add('dragover'); });
-dz.addEventListener('dragleave', ()  => dz.classList.remove('dragover'));
-dz.addEventListener('drop', e => {
-    e.preventDefault();
-    dz.classList.remove('dragover');
-    const file = e.dataTransfer.files[0];
-    if (file) {
-        selectedFile = file;
-        document.getElementById('file-name').textContent = '✅ ' + file.name;
-    }
-});
-
-async function uploadResume() {
-    const candidateName = document.getElementById('candidate-name').value.trim();
-
-    if (!candidateName) { showError('Please enter candidate name'); return; }
-    if (!selectedFile)  { showError('Please select a file');        return; }
-
-    const btn = document.getElementById('upload-btn');
-    btn.disabled    = true;
-    btn.textContent = 'Uploading...';
-
-    // ✅ Only name + file — email is extracted server-side from the file
-    const formData = new FormData();
-    formData.append('candidate_name', candidateName);
-    formData.append('file', selectedFile);
-
-    try {
-        const res  = await fetch(`${API}/recruitment/resumes/`, {
-            method:  'POST',
-            headers: authHeaders(),   // ✅ no Content-Type — FormData sets it with boundary
-            body:    formData,
-        });
-        const data = await res.json();
-
-        if (res.ok) {
-            const extractedEmail = data.candidate_email
-                ? ` (email found: ${data.candidate_email})`
-                : ' (no email found in file)';
-            showSuccess(`✅ Resume uploaded for ${candidateName}${extractedEmail}`);
-
-            document.getElementById('candidate-name').value = '';
-            document.getElementById('file-name').textContent = '';
-            document.getElementById('file-input').value = '';
-            selectedFile = null;
-
-            loadResumes();
-        } else {
-            showError(Object.values(data).flat().join(', ') || 'Upload failed');
-        }
-    } catch (e) {
-        showError('Something went wrong. Check your connection.');
-    }
-
-    btn.disabled    = false;
-    btn.textContent = '⬆️ Upload Resume';
-}
-
-async function deleteResume(id, name) {
-    if (!confirm(`Delete resume for ${name}?`)) return;
-
-    try {
-        const res = await fetch(`${API}/recruitment/resumes/${id}/`, {
-            method:  'DELETE',
-            headers: authHeaders(),
-        });
-
-        if (res.ok) { showSuccess('Resume deleted'); loadResumes(); }
-        else        { showError('Failed to delete'); }
-    } catch (e) {
-        showError('Something went wrong');
-    }
-}
-
 async function loadResumes() {
     try {
-        const res  = await fetch(`${API}/recruitment/resumes/`, {
-            headers: { 'Authorization': `Bearer ${token}` },
+        // Fetch from the new folder endpoint
+        const res  = await fetch(`${API}/recruitment/folder-resumes/`, {
+            headers: authHeaders(),
         });
         const data = await res.json();
 
+        const files = data.resumes || [];
+        
         document.getElementById('resume-count').textContent =
-            `${data.length} resume${data.length !== 1 ? 's' : ''}`;
+            `${files.length} file${files.length !== 1 ? 's' : ''}`;
 
         const tbody = document.getElementById('resume-tbody');
 
-        if (!data.length) {
-            tbody.innerHTML = '<tr class="empty-row"><td colspan="7">📭 No resumes uploaded yet</td></tr>';
+        if (!files.length) {
+            tbody.innerHTML = '<tr class="empty-row"><td colspan="4">📭 No resumes found in the server folder</td></tr>';
             return;
         }
 
-        tbody.innerHTML = data.map((r, i) => {
-            const ext  = r.file.split('.').pop().toUpperCase();
-            const icon = ext === 'PDF' ? '🔴' : '🔵';
-            const emailCell = r.candidate_email
-                ? r.candidate_email
-                : '<span style="color:#9CA3AF;font-style:italic;font-size:12px;">Not found in file</span>';
-
+        tbody.innerHTML = files.map((r, i) => {
             return `
             <tr>
-                <td style="color:#9CA3AF;font-weight:600">${i + 1}</td>
-                <td><strong>${r.candidate_name}</strong></td>
-                <td>${emailCell}</td>
-                <td><span class="file-badge">${icon} ${ext}</span></td>
-                <td>${r.uploaded_by_name}</td>
-                <td>${new Date(r.uploaded_at).toLocaleDateString('en-IN', {
-                    day:'numeric', month:'short', year:'numeric'
-                })}</td>
-                <td>
-                    <button class="btn-del" onclick="deleteResume(${r.id}, '${r.candidate_name}')">
-                        🗑 Delete
-                    </button>
-                </td>
+                <td style="color:#9CA3AF;font-weight:600;width:50px">${i + 1}</td>
+                <td><strong>${r.filename}</strong></td>
+                <td><span class="file-badge">${r.ext}</span></td>
+                <td style="font-size:12px;color:#059669;font-weight:600">Ready to Screen</td>
             </tr>`;
         }).join('');
 
     } catch (e) {
         document.getElementById('resume-tbody').innerHTML =
-            '<tr class="empty-row"><td colspan="7">Failed to load</td></tr>';
+            '<tr class="empty-row"><td colspan="4">Failed to load files from server</td></tr>';
     }
 }
 
