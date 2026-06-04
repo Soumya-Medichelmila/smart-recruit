@@ -5,3 +5,25 @@ backend/media/
 backend/__pycache__/
 backend/**/__pycache__/
 backend/**/*.pyc
+
+
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.env
+*.sqlite3
+
+# Node
+node_modules/
+dist/
+build/
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# General
+.DS_Store
+Thumbs.db

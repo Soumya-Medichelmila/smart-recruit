@@ -7,82 +7,33 @@
     <link rel="stylesheet" href="css/style.css">
     <style>
         .info-card {
-            background:#EEF2FF;
-            border-radius:12px;
-            padding:20px;
-            border:1px solid #C7D2FE;
-            margin-bottom:24px;
-            display:flex;
-            align-items:center;
-            gap:16px;
+            background: #EEF2FF;
+            border-radius: 12px;
+            padding: 28px 24px;
+            border: 1px solid #C7D2FE;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
         }
-        .info-icon { font-size:32px; }
-        .info-text h4 { margin:0 0 4px 0; font-size:15px; color:#3730A3; }
-        .info-text p { margin:0; font-size:13px; color:#4338CA; opacity:0.8; }
-
-        .resume-table { width:100%; border-collapse:collapse; }
-        .resume-table th {
-            background:#F9FAFB;
-            padding:12px 16px;
-            text-align:left;
-            font-size:12px;
-            font-weight:700;
-            color:#6B7280;
-            letter-spacing:0.5px;
-            text-transform:uppercase;
-            border-bottom:1px solid #E5E7EB;
+        .info-icon { font-size: 40px; }
+        .info-text h4 { margin: 0 0 6px 0; font-size: 16px; color: #3730A3; }
+        .info-text p  { margin: 0 0 16px 0; font-size: 13px; color: #4338CA; opacity: 0.85; }
+        .btn-go {
+            display: inline-block;
+            background: #4F46E5;
+            color: #fff;
+            font-weight: 700;
+            font-size: 13px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: opacity 0.15s;
         }
-        .resume-table td {
-            padding:14px 16px;
-            border-bottom:1px solid #F3F4F6;
-            font-size:14px;
-            color:#374151;
-            vertical-align:middle;
-        }
-        .resume-table tr:last-child td { border-bottom:none; }
-        .resume-table tr:hover td { background:#FAFAFA; }
-        .file-badge {
-            display:inline-flex;
-            align-items:center;
-            gap:6px;
-            background:#F3F4F6;
-            color:#4B5563;
-            padding:4px 10px;
-            border-radius:8px;
-            font-size:12px;
-            font-weight:600;
-        }
-        .table-card {
-            background:#fff;
-            border-radius:16px;
-            border:1px solid #E5E7EB;
-            box-shadow:0 1px 6px rgba(0,0,0,0.06);
-            overflow:hidden;
-        }
-        .table-header {
-            padding:18px 24px;
-            border-bottom:1px solid #E5E7EB;
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-        }
-        .table-title { font-size:16px; font-weight:700; color:#111827; }
-        .count-badge {
-            background:#F3F4F6;
-            color:#374151;
-            padding:4px 12px;
-            border-radius:20px;
-            font-size:13px;
-            font-weight:600;
-        }
-        .empty-row td { text-align:center; padding:48px; color:#9CA3AF; }
+        .btn-go:hover { opacity: 0.88; }
         .sidebar-divider {
-            font-size:10px;
-            color:#6B7280;
-            font-weight:600;
-            text-transform:uppercase;
-            padding:8px 20px 4px;
-            letter-spacing:1px;
+            font-size: 10px; color: #6B7280; font-weight: 600;
+            text-transform: uppercase; padding: 8px 20px 4px; letter-spacing: 1px;
         }
     </style>
 </head>
@@ -90,30 +41,21 @@
 
 <div class="layout">
 
-    <!-- SIDEBAR -->
     <aside class="sidebar">
         <div class="sidebar-logo">
-            <h1>⚡ SynergyCom</h1>
+            <h1>⚡ Synergycom</h1>
             <p>Employee Portal</p>
         </div>
-
         <nav class="sidebar-nav">
             <a href="employee-dashboard.html"><span class="icon">🏠</span> Dashboard</a>
             <a href="raise-vacancy.html"><span class="icon">📝</span> Raise Vacancy</a>
             <a href="my-requests.html"><span class="icon">📋</span> My Requests</a>
             <a href="job-openings.html"><span class="icon">📢</span> Job Openings</a>
             <a href="change-password.html"><span class="icon">🔑</span> Change Password</a>
-
             <div class="sidebar-divider">Recruitment</div>
-
-            <a href="recruitment-resumes.html" class="active">
-                <span class="icon">📄</span> Resume Pool
-            </a>
-            <a href="recruitment-screen.html">
-                <span class="icon">🔍</span> Screen Resumes
-            </a>
+            <a href="recruitment-resumes.html" class="active"><span class="icon">📄</span> Resume Pool</a>
+            <a href="recruitment-screen.html"><span class="icon">🔍</span> Screen Resumes</a>
         </nav>
-
         <div class="sidebar-footer">
             <div class="sidebar-user">
                 <div class="avatar" id="avatar-initials">R</div>
@@ -126,128 +68,36 @@
         </div>
     </aside>
 
-    <!-- MAIN -->
     <main class="main-content">
-
         <p class="page-title">📄 Resume Pool</p>
 
-        <div class="alert alert-success" id="success-alert"></div>
-        <div class="alert alert-error"   id="error-alert"></div>
-
-        <!-- INFO CARD (Replacing Upload) -->
         <div class="info-card">
             <div class="info-icon">📂</div>
             <div class="info-text">
-                <h4>Folder-Based Resume Processing</h4>
-                <p>Resumes are automatically read from the configured server directory. Go to <strong>Screen Resumes</strong> to process them.</p>
+                <h4>Folder-Based Resume Screening</h4>
+                <p>
+                    Resumes are read directly from any folder path you provide.<br>
+                    Paste a folder path on the <strong>Screen Resumes</strong> page to scan and score all PDF / DOCX files inside it instantly.
+                </p>
+                <a href="recruitment-screen.html" class="btn-go">🔍 Go to Screen Resumes →</a>
             </div>
         </div>
-
-        <!-- TABLE -->
-        <div class="table-card">
-
-            <div class="table-header">
-                <span class="table-title">Available Resumes</span>
-                <span class="count-badge" id="resume-count">0 files</span>
-            </div>
-
-            <table class="resume-table">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Filename</th>
-                        <th>Type</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody id="resume-tbody">
-                    <tr class="empty-row">
-                        <td colspan="4">Loading resumes...</td>
-                    </tr>
-                </tbody>
-            </table>
-
-        </div>
-
     </main>
 </div>
 
 <script>
-
-const API   = 'http://127.0.0.1:8000/api';
-const token = localStorage.getItem('access_token');
-const dept  = localStorage.getItem('department_name') || '';
-
-if (!token) window.location.href = 'index.html';
-
-if (dept.trim().toUpperCase() !== 'RECRUITMENT') {
-    alert('Access denied. Only Recruitment department members can access this page.');
-    window.location.href = 'employee-dashboard.html';
-}
-
-const name = localStorage.getItem('employee_name') || 'Recruiter';
-document.getElementById('user-name').textContent       = name;
-document.getElementById('user-role').textContent       = localStorage.getItem('role_name') || 'Recruitment';
-document.getElementById('avatar-initials').textContent = name.charAt(0).toUpperCase();
-
-function authHeaders() {
-    return { 'Authorization': `Bearer ${token}` };
-}
-
-function logout() { localStorage.clear(); window.location.href = 'index.html'; }
-
-function showSuccess(msg) {
-    const el = document.getElementById('success-alert');
-    el.textContent = msg;
-    el.classList.add('show');
-    setTimeout(() => el.classList.remove('show'), 3500);
-}
-
-function showError(msg) {
-    const el = document.getElementById('error-alert');
-    el.textContent = msg;
-    el.classList.add('show');
-    setTimeout(() => el.classList.remove('show'), 3500);
-}
-
-async function loadResumes() {
-    try {
-        // Fetch from the new folder endpoint
-        const res  = await fetch(`${API}/recruitment/folder-resumes/`, {
-            headers: authHeaders(),
-        });
-        const data = await res.json();
-
-        const files = data.resumes || [];
-        
-        document.getElementById('resume-count').textContent =
-            `${files.length} file${files.length !== 1 ? 's' : ''}`;
-
-        const tbody = document.getElementById('resume-tbody');
-
-        if (!files.length) {
-            tbody.innerHTML = '<tr class="empty-row"><td colspan="4">📭 No resumes found in the server folder</td></tr>';
-            return;
-        }
-
-        tbody.innerHTML = files.map((r, i) => {
-            return `
-            <tr>
-                <td style="color:#9CA3AF;font-weight:600;width:50px">${i + 1}</td>
-                <td><strong>${r.filename}</strong></td>
-                <td><span class="file-badge">${r.ext}</span></td>
-                <td style="font-size:12px;color:#059669;font-weight:600">Ready to Screen</td>
-            </tr>`;
-        }).join('');
-
-    } catch (e) {
-        document.getElementById('resume-tbody').innerHTML =
-            '<tr class="empty-row"><td colspan="4">Failed to load files from server</td></tr>';
+    const token = localStorage.getItem('access_token');
+    const dept  = localStorage.getItem('department_name') || '';
+    if (!token) window.location.href = 'index.html';
+    if (dept.trim().toUpperCase() !== 'RECRUITMENT') {
+        alert('Access denied. Only Recruitment department members can access this page.');
+        window.location.href = 'employee-dashboard.html';
     }
-}
-
-loadResumes();
-
+    const name = localStorage.getItem('employee_name') || 'Recruiter';
+    document.getElementById('user-name').textContent       = name;
+    document.getElementById('user-role').textContent       = localStorage.getItem('role_name') || 'Recruitment';
+    document.getElementById('avatar-initials').textContent = name.charAt(0).toUpperCase();
+    function logout() { localStorage.clear(); window.location.href = 'index.html'; }
 </script>
 </body>
 </html>

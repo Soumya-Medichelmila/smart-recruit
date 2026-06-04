@@ -3,10 +3,6 @@ from accounts.models import Employee
 from jobs.models import JobOpening
 
 
-# Resume model removed.
-# Resumes are now read directly from a configured server directory,
-# not stored in the database.
-
 
 class ScreeningResult(models.Model):
     job_opening = models.ForeignKey(
@@ -14,9 +10,6 @@ class ScreeningResult(models.Model):
         on_delete=models.CASCADE,
         related_name='screening_results'
     )
-
-    # Stores the filename found in the configured server directory.
-    # No file is uploaded to the server via this model.
     source_filename = models.CharField(
         max_length=255,
         help_text='Filename inside the configured resume directory'
@@ -32,8 +25,7 @@ class ScreeningResult(models.Model):
     reason = models.TextField(help_text='LLM explanation of match')
     screened_at = models.DateTimeField(auto_now_add=True)
     
-    # If screening is fully automated (e.g., via cron), this might reference a System user.
-    # If triggered by an admin click, it references that Employee.
+
     screened_by = models.ForeignKey(
         Employee,
         on_delete=models.PROTECT,
@@ -126,8 +118,6 @@ class InterviewSchedule(models.Model):
         choices=STATUS_CHOICES,
         default='SCHEDULED'
     )
-    # Flag to track if notification was sent. 
-    # Note: Bulk email workflow is removed, but individual status tracking remains for dashboards.
     email_sent = models.BooleanField(default=False)
     scheduled_by = models.ForeignKey(
         Employee,
