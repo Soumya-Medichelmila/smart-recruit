@@ -13,6 +13,17 @@ HR / Admin reviews & approves → Job Opening created
         ↓
 Recruitment team uploads resumes & runs AI screening
         ↓
+  Resume file received (PDF or DOCX)
+        ↓
+  ┌─────────────────────────────────┐
+  │  Is PDF text-based?             │
+  │  YES → pdfplumber extracts text │
+  │  NO (scanned/image PDF)         │
+  │      → pytesseract OCR extracts │
+  └─────────────────────────────────┘
+        ↓
+  Extracted text sent to Groq LLM (Llama 3.1)
+        ↓
 HR views screening results → Shortlists candidates
         ↓
 JRHR / HR uses Kanban board → Drags candidates through pipeline
@@ -37,6 +48,14 @@ Rejected → Candidate receives rejection email
 - Recruitment team uploads resumes (PDF / DOCX) for a job opening
 - AI (Groq LLM — Llama 3.1) screens each resume against the job description
 - Generates match scores (0–100) with detailed reasons
+- Supports both **text-based PDFs** (via pdfplumber) and **scanned/image PDFs** (via pytesseract OCR)
+
+### 📄 Smart Resume Parsing Pipeline
+| File Type | Parsing Method |
+|-----------|---------------|
+| DOCX | python-docx |
+| Text-based PDF | pdfplumber |
+| Scanned / Image PDF | pdf2image + pytesseract OCR |
 
 ### 📊 Shortlisting & Results
 - HR views AI screening results per job opening
@@ -70,7 +89,9 @@ Rejected → Candidate receives rejection email
 | Database | SQLite (dev) / PostgreSQL (prod) |
 | Auth | JWT (SimpleJWT) |
 | Email | Mailtrap (dummy SMTP for testing) |
-| File Parsing | pdfplumber, python-docx |
+| PDF Extraction | pdfplumber (text-based PDFs) |
+| OCR (Scanned PDFs) | pytesseract + pdf2image + Poppler |
+| DOCX Parsing | python-docx |
 | Environment | python-dotenv |
 
 ---
@@ -88,7 +109,6 @@ smart-recruit/
 │   ├── hr-screening-results.html
 │   ├── jrhr-dashboard.html
 │   ├── jrhr-kanban.html             # Kanban drag-and-drop board
-│   ├── jrhr-interview-schedule.html
 │   ├── recruitment-screen.html
 │   ├── recruitment-resumes.html
 │   └── ...
@@ -107,7 +127,9 @@ smart-recruit/
     │   ├── models.py
     │   ├── views.py
     │   ├── serializers.py
-    │   └── urls.py
+    │   ├── urls.py
+    │   └── utils/
+    │       └── resume_parser.py     # pdfplumber + pytesseract logic
     ├── media/                       # Uploaded resumes
     ├── .gitignore
     ├── manage.py
@@ -140,7 +162,49 @@ source venv/bin/activate
 pip install -r backend/requirements.txt
 ```
 
-### 4. Create `.env` file inside `backend/`
+### 4. Install Tesseract OCR Engine (for scanned PDFs)
+
+Tesseract is an external binary required by pytesseract.
+
+**Windows:**
+1. Download the installer from [https://github.com/UB-Mannheim/tesseract/wiki](https://github.com/UB-Mannheim/tesseract/wiki)
+2. Run the installer (default path: `C:\Program Files\Tesseract-OCR\tesseract.exe`)
+3. Add Tesseract to your system PATH, **or** set it in your code:
+```python
+# In resume_parser.py or settings.py
+import pytesseract
+pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+```
+
+**Ubuntu/Debian:**
+```bash
+sudo apt install tesseract-ocr
+```
+
+**Mac:**
+```bash
+brew install tesseract
+```
+
+### 5. Install Poppler (required by pdf2image)
+
+pdf2image converts scanned PDF pages into images for OCR.
+
+**Windows:**
+1. Download Poppler for Windows from [https://github.com/oschwartz10612/poppler-windows/releases](https://github.com/oschwartz10612/poppler-windows/releases)
+2. Extract and add the `bin/` folder to your system PATH
+
+**Ubuntu/Debian:**
+```bash
+sudo apt install poppler-utils
+```
+
+**Mac:**
+```bash
+brew install poppler
+```
+
+### 6. Create `.env` file inside `backend/`
 ```env
 GROQ_API_KEY=your_groq_api_key_here
 SECRET_KEY=your_django_secret_key_here
@@ -155,23 +219,23 @@ EMAIL_HOST_PASSWORD=your_mailtrap_password
 EMAIL_USE_TLS=True
 ```
 
-### 5. Run migrations
+### 7. Run migrations
 ```bash
 cd backend
 python manage.py migrate
 ```
 
-### 6. Create superuser
+### 8. Create superuser
 ```bash
 python manage.py createsuperuser
 ```
 
-### 7. Start the server
+### 9. Start the server
 ```bash
 python manage.py runserver
 ```
 
-### 8. Open the frontend
+### 10. Open the frontend
 Open `frontend/index.html` in your browser or serve it via Live Server.
 
 ---
@@ -229,18 +293,62 @@ Open `frontend/index.html` in your browser or serve it via Live Server.
 
 The system uses **Groq LLM (Llama 3.1)** to automatically evaluate resumes against job descriptions.
 
-**Process:**
-1. Upload resumes (PDF or DOCX) for a specific job opening
-2. Trigger screening — LLM reads each resume and the job description
-3. Returns a score (0–100) with a detailed reason for each candidate
+### Resume Parsing Pipeline
 
-**Scoring:**
+Before sending to the LLM, each uploaded resume goes through a smart parsing pipeline:
+
+```
+Resume Uploaded (PDF or DOCX)
+        ↓
+   Is it a DOCX?
+   YES → python-docx extracts text directly
+        ↓
+   Is it a PDF?
+        ↓
+   ┌─── Try pdfplumber ───────────────────────────────┐
+   │    Extracts text from text-based/digital PDFs    │
+   │    Fast, accurate, preserves formatting          │
+   └──────────────────────────────────────────────────┘
+        ↓
+   Was text found? (len > threshold)
+   YES → Use pdfplumber text ✅
+   NO  → PDF is scanned/image-based
+        ↓
+   ┌─── Fallback: pytesseract OCR ────────────────────┐
+   │    pdf2image converts each page → image          │
+   │    pytesseract reads text from image via OCR     │
+   │    Handles scanned resumes, photo PDFs           │
+   └──────────────────────────────────────────────────┘
+        ↓
+   Extracted text → sent to Groq LLM for scoring
+```
+
+### Scoring
 | Score | Match Level |
 |-------|-------------|
 | 80–100 | Excellent match |
 | 60–79 | Good match |
 | 40–59 | Partial match |
 | 0–39 | Poor match |
+
+---
+
+## 📦 Key Dependencies
+
+```
+django
+djangorestframework
+djangorestframework-simplejwt
+groq
+pdfplumber
+pytesseract
+pdf2image
+python-docx
+python-dotenv
+Pillow
+```
+
+> Full list in `backend/requirements.txt`
 
 ---
 
@@ -275,7 +383,7 @@ staticfiles/
 ## 👨‍💻 Author
 
 **Soumya Medichelmila**  
-Built with Django REST Framework + Groq AI + Mailtrap
+Built with Django REST Framework + Groq AI + pdfplumber + pytesseract OCR + Mailtrap
 
 ---
 
