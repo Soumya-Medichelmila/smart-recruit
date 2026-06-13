@@ -10,3 +10,5 @@ groq
 pytesseract
 pdf2image
 Pillow
+django-cors-headers
+drf-yasg
