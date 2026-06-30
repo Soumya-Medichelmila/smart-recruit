@@ -852,3 +852,90 @@ tr:hover td { background: var(--gray-100); }
     background: #fff; border-radius: 20px;
     border: 1px dashed #E5E7EB;
 }
+
+
+/* ============================================================
+   RESPONSIVE
+   Applies to every page that links this stylesheet.
+   The fixed sidebar + margin-left layout pattern used across
+   all pages is collapsed into a top bar below 900px, and into
+   a horizontal scroll strip below 600px.
+   ============================================================ */
+
+@media (max-width: 1100px) {
+    .dashboard-grid { grid-template-columns: 1fr; }
+    .profile-card-side { position: static; order: -1; }
+}
+
+@media (max-width: 900px) {
+    :root { --sidebar-width: 72px; }
+
+    .sidebar { align-items: center; }
+    .sidebar-logo { padding: 16px 8px; text-align: center; }
+    .sidebar-logo h1 { font-size: 0; }
+    .sidebar-logo h1::before { content: '⚡'; font-size: 22px; }
+    .sidebar-logo p { display: none; }
+
+    .sidebar-nav { width: 100%; padding: 8px 0; }
+    .sidebar-nav a { justify-content: center; padding: 12px 8px; gap: 0; }
+    .sidebar-nav a:hover, .sidebar-nav a.active { border-left: none; border-right: 3px solid var(--primary); }
+    .sidebar-nav a > :not(.icon) { display: none; }
+    .sidebar-divider { display: none; }
+
+    .sidebar-footer { padding: 10px 8px; }
+    .sidebar-user .user-info { display: none; }
+    .sidebar-user { justify-content: center; margin-bottom: 8px; }
+    .logout-btn { font-size: 0; padding: 10px; }
+    .logout-btn::before { content: '🚪'; font-size: 14px; }
+
+    .main-content { margin-left: var(--sidebar-width); padding: 18px; }
+
+    .form-grid,
+    .form-grid-2,
+    .modal-grid,
+    .quick-actions,
+    .job-card-body { grid-template-columns: 1fr; }
+
+    .job-card-top { padding: 20px; }
+    .job-card-body { padding: 18px 20px; gap: 16px; }
+    .job-card-footer { padding: 12px 20px; flex-wrap: wrap; }
+
+    .screen-controls,
+    .stats-row,
+    .filter-bar { flex-wrap: wrap; }
+
+    .welcome-banner { flex-direction: column; text-align: center; gap: 12px; padding: 24px; }
+    .welcome-illustration { font-size: 48px; }
+}
+
+@media (max-width: 600px) {
+    :root { --sidebar-width: 0px; }
+
+    .layout { flex-direction: column; }
+    .sidebar {
+        position: relative; width: 100%; height: auto;
+        flex-direction: row; align-items: center;
+    }
+    .sidebar-logo { border-bottom: none; padding: 10px; flex-shrink: 0; }
+    .sidebar-nav { display: flex; overflow-x: auto; padding: 6px; flex: 1; }
+    .sidebar-nav a { flex-direction: column; gap: 2px; padding: 6px 10px; flex-shrink: 0; font-size: 10px; }
+    .sidebar-footer { display: flex; align-items: center; padding: 8px; border-top: none; flex-shrink: 0; }
+    .sidebar-user { margin-bottom: 0; }
+    .logout-btn { width: auto; }
+
+    .main-content { margin-left: 0; padding: 14px; }
+    .page-title { font-size: 19px; }
+
+    .card, .form-card { padding: 16px; }
+    .modal, .modal.modal-wide { padding: 18px; width: 94%; }
+
+    table { font-size: 12px; }
+    th, td { padding: 8px 10px; }
+
+    .login-card { padding: 24px; }
+
+    .interview-row, .interview-header {
+        grid-template-columns: 1fr;
+        gap: 4px;
+    }
+}

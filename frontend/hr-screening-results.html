@@ -1,35 +1,135 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart_Recruit —  Screening Results</title>
-    <link rel="stylesheet" href="css/style.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart_Recruit — Screening Results</title>
+    <link rel="stylesheet" href="css/style.css" />
     <style>
-        .job-select-card { background:white;border-radius:16px;padding:20px 24px;box-shadow:0 1px 3px rgba(0,0,0,.1);margin-bottom:24px; }
-        .results-table { width:100%;border-collapse:collapse; }
-        .results-table th { background:#F9FAFB;padding:12px 16px;text-align:left;font-size:12px;font-weight:700;color:#6B7280;text-transform:uppercase;border-bottom:1px solid #E5E7EB; }
-        .results-table td { padding:14px 16px;border-bottom:1px solid #F3F4F6;font-size:13px;color:#374151;vertical-align:middle; }
-        .results-table tr:hover td { background:#FAFAFA; }
-        .score-bar-wrap { display:flex;align-items:center;gap:10px; }
-        .score-bar-bg { flex:1;background:#F3F4F6;border-radius:20px;height:8px;overflow:hidden;min-width:80px; }
-        .score-bar-fill { height:100%;border-radius:20px; }
-        .score-num { font-size:13px;font-weight:800;min-width:36px; }
-        .shortlist-btn { padding:6px 14px;border-radius:8px;border:none;cursor:pointer;font-size:12px;font-weight:600;transition:all .2s; }
-        .btn-shortlist { background:#D1FAE5;color:#065F46;border:1px solid #6EE7B7; }
-        .btn-shortlist:hover { background:#A7F3D0; }
-        .btn-remove { background:#FEE2E2;color:#991B1B;border:1px solid #FCA5A5; }
-        .btn-remove:hover { background:#FECACA; }
-        .shortlisted-badge { background:#D1FAE5;color:#065F46;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600; }
-        .tabs { display:flex;gap:4px;background:#F3F4F6;padding:4px;border-radius:8px;margin-bottom:20px;max-width:350px; }
-        .tab { flex:1;padding:8px;text-align:center;border-radius:6px;cursor:pointer;font-size:13px;font-weight:500;color:#6B7280;border:none;background:none; }
-        .tab.active { background:white;color:#4F46E5;box-shadow:0 1px 3px rgba(0,0,0,.1); }
+        /* ── Job Selector ── */
+        .job-select-card {
+            background: white; border-radius: 16px;
+            padding: 20px 24px; border: 1px solid #E5E7EB;
+            margin-bottom: 24px;
+            display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap;
+        }
+        .job-select-card .form-group { flex: 1; min-width: 200px; margin-bottom: 0; }
+
+        .count-badge {
+            background: #EEF2FF; color: #4F46E5;
+            padding: 8px 16px; border-radius: 10px;
+            font-size: 13px; font-weight: 600; white-space: nowrap;
+            display: none;
+        }
+
+        /* ── Tabs ── */
+        .tabs {
+            display: flex; gap: 4px; background: #F3F4F6;
+            padding: 4px; border-radius: 10px;
+            width: fit-content; margin-bottom: 20px;
+        }
+        .tab {
+            padding: 8px 18px; border-radius: 7px;
+            cursor: pointer; font-size: 13px; font-weight: 500;
+            color: #6B7280; border: none; background: none; transition: all .15s;
+        }
+        .tab.active { background: white; color: #4F46E5; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+
+        /* ── Cards Grid ── */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px;
+        }
+        @media (max-width: 600px) { .cards-grid { grid-template-columns: 1fr; } }
+
+        /* ── Candidate Card ── */
+        .candidate-card {
+            background: white; border-radius: 14px;
+            border: 1px solid #E5E7EB; padding: 20px;
+            display: flex; flex-direction: column; gap: 12px;
+            position: relative; transition: box-shadow .2s, border-color .2s;
+        }
+        .candidate-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); border-color: #C7D2FE; }
+        .candidate-card.shortlisted { border-left: 4px solid #10B981; }
+
+        .card-rank {
+            position: absolute; top: 14px; right: 14px; font-size: 20px;
+        }
+        .card-name  { font-size: 15px; font-weight: 700; color: #1F2937; padding-right: 32px; }
+        .card-email { font-size: 12px; color: #9CA3AF; }
+
+        /* Score */
+        .score-row { display: flex; align-items: center; gap: 12px; }
+        .score-ring {
+            width: 54px; height: 54px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 800; border: 3px solid; flex-shrink: 0;
+        }
+        .score-bar-wrap { flex: 1; }
+        .score-bar-label { font-size: 11px; color: #6B7280; margin-bottom: 4px; }
+        .score-bar-bg { background: #F3F4F6; border-radius: 20px; height: 8px; overflow: hidden; }
+        .score-bar-fill { height: 100%; border-radius: 20px; }
+
+        /* Reason */
+        .reason-text {
+            font-size: 12px; color: #6B7280; line-height: 1.5;
+            border-left: 3px solid #E5E7EB; padding-left: 10px;
+        }
+
+        /* Skills */
+        .skills-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
+        .skill-tag {
+            background: #EEF2FF; color: #4338CA;
+            font-size: 11px; padding: 3px 10px;
+            border-radius: 20px; font-weight: 500;
+        }
+
+        /* Badges */
+        .badges-row { display: flex; gap: 8px; flex-wrap: wrap; }
+        .badge { font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 600; }
+        .badge-shortlisted { background: #D1FAE5; color: #065F46; }
+        .badge-section     { background: #F3F4F6; color: #6B7280; }
+        .badge-auto        { background: #FEF3C7; color: #92400E; }
+
+        /* Actions */
+        .card-actions { display: flex; gap: 8px; }
+        .btn-action {
+            flex: 1; padding: 8px; border-radius: 8px;
+            font-size: 12px; font-weight: 600; cursor: pointer;
+            border: none; transition: all .2s;
+        }
+        .btn-remove { background: #FEE2E2; color: #991B1B; }
+        .btn-remove:hover { background: #FECACA; }
+        .btn-add    { background: #D1FAE5; color: #065F46; }
+        .btn-add:hover { background: #A7F3D0; }
+
+        /* Empty / Loading */
+        .empty-state { text-align: center; padding: 60px 24px; color: #9CA3AF; }
+        .empty-state .icon { font-size: 52px; margin-bottom: 16px; }
+
+        /* Summary pills */
+        .summary-bar { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+        .summary-pill {
+            padding: 7px 16px; border-radius: 20px;
+            font-size: 13px; font-weight: 600;
+        }
+        .pill-total      { background: #F3F4F6; color: #374151; }
+        .pill-shortlisted{ background: #D1FAE5; color: #065F46; }
+
+        @media (max-width: 768px) {
+            .job-select-card { flex-direction: column; }
+        }
     </style>
 </head>
 <body>
 <div class="layout">
+
     <aside class="sidebar">
-        <div class="sidebar-logo"><h1>⚡ Smart_Recruit</h1><p>Admin Panel</p></div>
+        <div class="sidebar-logo">
+            <h1>⚡ Smart_Recruit</h1>
+            <p>Admin Panel</p>
+        </div>
         <nav class="sidebar-nav">
             <a href="admin-dashboard.html"><span class="icon">🏠</span> Dashboard</a>
             <a href="employee-list.html"><span class="icon">👥</span> Employees</a>
@@ -56,214 +156,250 @@
         <p class="page-title">🔍 Screening Results</p>
 
         <div class="alert alert-success" id="success-alert"></div>
-        <div class="alert alert-error" id="error-alert"></div>
+        <div class="alert alert-error"   id="error-alert"></div>
 
         <!-- Job Selector -->
         <div class="job-select-card">
-            <div style="display:flex;gap:16px;align-items:flex-end">
-                <div class="form-group" style="flex:1;margin-bottom:0">
-                    <label>Select Job Opening</label>
-                    <select id="job-select" onchange="loadResults()">
-                        <option value="">-- Select a job --</option>
-                    </select>
-                </div>
-                <div id="shortlist-count-badge" style="display:none;background:#EEF2FF;color:#4F46E5;padding:8px 16px;border-radius:10px;font-size:13px;font-weight:600;white-space:nowrap">
-                    ✅ <span id="shortlist-count">0</span> Shortlisted
-                </div>
+            <div class="form-group">
+                <label>Select Job Opening</label>
+                <select id="job-select" onchange="loadResults()">
+                    <option value="">— Select a job —</option>
+                </select>
+            </div>
+            <div class="count-badge" id="count-badge">
+                ⭐ <span id="shortlist-count">0</span> Shortlisted
             </div>
         </div>
 
-        <!-- Tabs -->
-        <div class="tabs" id="result-tabs" style="display:none">
-            <button class="tab active" onclick="filterTab('all')">All Candidates</button>
-            <button class="tab" onclick="filterTab('shortlisted')">✅ Shortlisted Only</button>
-        </div>
-
-        <!-- Results -->
-        <div id="results-container">
-            <div class="card" style="text-align:center;padding:48px">
-                <div style="font-size:48px;margin-bottom:16px">🔍</div>
-                <p style="color:#6B7280">Select a job opening above to view screening results</p>
+        <!-- Results Area -->
+        <div id="results-area">
+            <div class="empty-state">
+                <div class="icon">🔍</div>
+                <p>Select a job opening to view shortlisted candidates</p>
             </div>
         </div>
+
     </main>
 </div>
 
 <script>
-    const API = 'http://127.0.0.1:8000/api';
-    const token = localStorage.getItem('access_token');
-    const role = localStorage.getItem('role_code');
-    if (!token) window.location.href = 'index.html';
-    if (role !== 'ADMIN' && role !== 'HR') window.location.href = 'employee-dashboard.html';
+const API   = 'http://127.0.0.1:8000/api';
+const token = localStorage.getItem('access_token');
+const role  = localStorage.getItem('role_code');
+if (!token) window.location.href = 'index.html';
+if (role !== 'ADMIN' && role !== 'HR') window.location.href = 'employee-dashboard.html';
 
-    const name = localStorage.getItem('employee_name') || 'Admin';
-    document.getElementById('user-name').textContent = name;
-    document.getElementById('user-role').textContent = localStorage.getItem('role_name') || 'HR';
-    document.getElementById('avatar-initials').textContent = name.charAt(0).toUpperCase();
+const uname = localStorage.getItem('employee_name') || 'Admin';
+document.getElementById('user-name').textContent       = uname;
+document.getElementById('user-role').textContent       = localStorage.getItem('role_name') || 'HR';
+document.getElementById('avatar-initials').textContent = uname.charAt(0).toUpperCase();
 
-    function authHeaders() { return { 'Content-Type':'application/json','Authorization':`Bearer ${token}` }; }
-    function logout() { localStorage.clear(); window.location.href = 'index.html'; }
+function authHeaders() {
+    return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
+}
+function logout() { localStorage.clear(); window.location.href = 'index.html'; }
 
-    function showSuccess(msg) {
-        const el = document.getElementById('success-alert');
-        el.textContent = msg; el.classList.add('show');
-        setTimeout(() => el.classList.remove('show'), 3000);
-    }
-    function showError(msg) {
-        const el = document.getElementById('error-alert');
-        el.textContent = msg; el.classList.add('show');
-        setTimeout(() => el.classList.remove('show'), 3000);
-    }
+function showAlert(type, msg) {
+    const el = document.getElementById(`${type}-alert`);
+    el.textContent = msg; el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 3500);
+}
 
-    let allResults = [];
-    let currentTab = 'all';
+function scoreColor(score) {
+    if (score >= 80) return '#10B981';
+    if (score >= 60) return '#F59E0B';
+    if (score >= 40) return '#F97316';
+    return '#EF4444';
+}
+function rankEmoji(i) { return ['🥇','🥈','🥉'][i] || `#${i+1}`; }
 
-    function scoreColor(score) {
-        if (score >= 80) return '#10B981';
-        if (score >= 60) return '#F59E0B';
-        if (score >= 40) return '#F97316';
-        return '#EF4444';
-    }
+let allResults = [];
+let currentTab = 'all';
 
-    function filterTab(tab) {
-        currentTab = tab;
-        document.querySelectorAll('.tab').forEach((btn, i) => {
-            btn.classList.toggle('active', ['all','shortlisted'][i] === tab);
+// ── Load Jobs ────────────────────────────────────────────────────────────────
+async function loadJobs() {
+    try {
+        const res  = await fetch(`${API}/recruitment/results/`, { headers: authHeaders() });
+        const jobs = await res.json();
+        const sel  = document.getElementById('job-select');
+        (Array.isArray(jobs) ? jobs : []).forEach(j => {
+            const opt = document.createElement('option');
+            opt.value       = j.id;
+            opt.textContent = `${j.title}${j.department ? ' — ' + j.department : ''} (${j.result_count} screened)`;
+            sel.appendChild(opt);
         });
-        renderResults(tab === 'shortlisted' ? allResults.filter(r => r.is_shortlisted) : allResults);
+    } catch(e) { console.error('Jobs load failed', e); }
+}
+
+// ── Load Results ─────────────────────────────────────────────────────────────
+async function loadResults() {
+    const jobId = document.getElementById('job-select').value;
+    if (!jobId) return;
+
+    document.getElementById('results-area').innerHTML = `
+        <div class="empty-state">
+            <div style="width:40px;height:40px;border:4px solid #E5E7EB;border-top-color:#4F46E5;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px"></div>
+            <p>Loading results...</p>
+        </div>
+        <style>@keyframes spin{to{transform:rotate(360deg)}}</style>`;
+
+    try {
+        const res  = await fetch(`${API}/recruitment/results/${jobId}/`, { headers: authHeaders() });
+        const data = await res.json();
+        allResults = (Array.isArray(data) ? data : (data.results || []));
+        allResults.sort((a, b) => b.match_score - a.match_score);
+
+        const shortlisted = allResults.filter(r => r.is_shortlisted);
+        document.getElementById('shortlist-count').textContent = shortlisted.length;
+        document.getElementById('count-badge').style.display   = 'block';
+
+        currentTab = 'shortlisted'; // ← default to shortlisted view for HR
+        renderUI();
+
+    } catch(e) {
+        document.getElementById('results-area').innerHTML =
+            '<div class="empty-state"><div class="icon">❌</div><p>Failed to load results.</p></div>';
+    }
+}
+
+// ── Render UI ─────────────────────────────────────────────────────────────────
+function renderUI() {
+    const shortlisted = allResults.filter(r => r.is_shortlisted);
+    const area = document.getElementById('results-area');
+
+    area.innerHTML = `
+        <!-- Summary -->
+        <div class="summary-bar">
+            <span class="summary-pill pill-total">📊 ${allResults.length} total screened</span>
+            <span class="summary-pill pill-shortlisted">⭐ ${shortlisted.length} shortlisted</span>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab ${currentTab==='shortlisted'?'active':''}" onclick="switchTab('shortlisted')">⭐ Shortlisted (${shortlisted.length})</button>
+            <button class="tab ${currentTab==='all'?'active':''}"         onclick="switchTab('all')">All Candidates (${allResults.length})</button>
+        </div>
+
+        <!-- Cards -->
+        <div class="cards-grid" id="cards-grid"></div>
+    `;
+
+    renderCards(currentTab === 'shortlisted' ? shortlisted : allResults);
+}
+
+function switchTab(tab) {
+    currentTab = tab;
+    document.querySelectorAll('.tab').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    renderCards(tab === 'shortlisted'
+        ? allResults.filter(r => r.is_shortlisted)
+        : allResults);
+}
+
+// ── Render Cards ──────────────────────────────────────────────────────────────
+function renderCards(results) {
+    const grid = document.getElementById('cards-grid');
+    if (!grid) return;
+
+    if (!results.length) {
+        grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+            <div class="icon">${currentTab === 'shortlisted' ? '⭐' : '📭'}</div>
+            <p>${currentTab === 'shortlisted' ? 'No candidates shortlisted yet for this job.' : 'No screening results found.'}</p>
+        </div>`;
+        return;
     }
 
-    function renderResults(results) {
-        const container = document.getElementById('results-container');
-        const shortlistedCount = allResults.filter(r => r.is_shortlisted).length;
-        document.getElementById('shortlist-count').textContent = shortlistedCount;
+    grid.innerHTML = results.map((r, i) => {
+        const color  = scoreColor(r.match_score);
+        const skills = (r.skills || '').split(',').map(s => s.trim()).filter(Boolean);
+        const srId   = r.id || r.screening_result_id;
 
-        if (!results.length) {
-            container.innerHTML = `<div class="card" style="text-align:center;padding:48px"><p style="color:#6B7280">${currentTab === 'shortlisted' ? 'No candidates shortlisted yet' : 'No screening results found'}</p></div>`;
-            return;
-        }
+        return `
+        <div class="candidate-card ${r.is_shortlisted ? 'shortlisted' : ''}" id="card-${srId}">
+            <span class="card-rank">${rankEmoji(i)}</span>
 
-        container.innerHTML = `
-            <div class="card">
-                <div class="table-wrapper">
-                    <table class="results-table">
-                        <thead>
-                            <tr>
-                                <th>Rank</th>
-                                <th>Candidate</th>
-                                <th>Email</th>
-                                <th>Match Score</th>
-                                <th>Reason</th>
-                                <th>Status</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${results.map((r, i) => `
-                            <tr id="row-${r.id}">
-                                <td style="font-weight:800;color:#6B7280">${i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1)}</td>
-                                <td><strong>${r.candidate_name}</strong></td>
-                                <td style="color:#6B7280;font-size:12px">${r.candidate_email || '—'}</td>
-                                <td>
-                                    <div class="score-bar-wrap">
-                                        <div class="score-bar-bg">
-                                            <div class="score-bar-fill" style="width:${r.match_score}%;background:${scoreColor(r.match_score)}"></div>
-                                        </div>change-password.html
-                                        <span class="score-num" style="color:${scoreColor(r.match_score)}">${r.match_score}%</span>
-                                    </div>
-                                </td>
-                                <td style="color:#6B7280;font-size:12px;max-width:250px">${r.reason}</td>
-                                <td>
-                                    ${r.is_shortlisted
-                                        ? '<span class="shortlisted-badge">✅ Shortlisted</span>'
-                                        : '<span style="color:#9CA3AF;font-size:12px">Not shortlisted</span>'
-                                    }
-                                </td>
-                                <td>
-                                    ${r.is_shortlisted
-                                        ? `<button class="shortlist-btn btn-remove" onclick="removeShortlist(${r.id})">❌ Remove</button>`
-                                        : `<button class="shortlist-btn btn-shortlist" onclick="addShortlist(${r.id})">✅ Shortlist</button>`
-                                    }
-                                </td>
-                            </tr>`).join('')}
-                        </tbody>
-                    </table>
+            <div>
+                <div class="card-name">${r.candidate_name}</div>
+                <div class="card-email">${r.candidate_email || 'No email'}</div>
+            </div>
+
+            <!-- Score Ring -->
+            <div class="score-row">
+                <div class="score-ring" style="color:${color};border-color:${color}">
+                    ${r.match_score}%
+                </div>
+                <div class="score-bar-wrap">
+                    <div class="score-bar-label">Match Score</div>
+                    <div class="score-bar-bg">
+                        <div class="score-bar-fill" style="width:${r.match_score}%;background:${color}"></div>
+                    </div>
                 </div>
             </div>
-        `;
-    }
 
-    async function loadJobs() {
-        try {
-            // ✅ AllScreeningJobsView returns: [{id, title, department, result_count}, ...]
-            const res = await fetch(`${API}/recruitment/results/`, { headers: authHeaders() });
-            const jobs = await res.json();
-            const select = document.getElementById('job-select');
-            jobs.forEach(j => {
-                const opt = document.createElement('option');
-                opt.value = j.id;  // ✅ was j.job_id (undefined)
-                opt.textContent = `${j.title} — ${j.department} (${j.result_count} candidates)`;
-                select.appendChild(opt);
-            });
-        } catch(e) { console.error(e); }
-    }
+            <!-- Reason -->
+            <div class="reason-text">${r.reason || '—'}</div>
 
-    async function loadResults() {
-        const jobId = document.getElementById('job-select').value;
-        if (!jobId) return;
+            <!-- Skills -->
+            ${skills.length ? `
+            <div class="skills-wrap">
+                ${skills.slice(0, 5).map(s => `<span class="skill-tag">${s}</span>`).join('')}
+                ${skills.length > 5 ? `<span class="skill-tag" style="background:#F3F4F6;color:#9CA3AF">+${skills.length-5} more</span>` : ''}
+            </div>` : ''}
 
-        document.getElementById('results-container').innerHTML = '<div class="loading">Loading results...</div>';
+            <!-- Badges -->
+            <div class="badges-row">
+                ${r.is_shortlisted ? '<span class="badge badge-shortlisted">⭐ Shortlisted</span>' : ''}
+                ${r.best_section   ? `<span class="badge badge-section">📌 ${r.best_section}</span>` : ''}
+            </div>
 
-        try {
-            // ✅ ScreeningResultsView returns a plain array, not {results: [...]}
-            const res = await fetch(`${API}/recruitment/results/${jobId}/`, { headers: authHeaders() });
-            const data = await res.json();
-            allResults = Array.isArray(data) ? data : (data.results || []);
-            allResults.sort((a, b) => b.match_score - a.match_score);
+            <!-- Action -->
+            <div class="card-actions">
+                ${r.is_shortlisted
+                    ? `<button class="btn-action btn-remove" onclick="removeShortlist(${srId})">❌ Remove from Shortlist</button>`
+                    : `<button class="btn-action btn-add"    onclick="addShortlist(${srId})">✅ Add to Shortlist</button>`
+                }
+            </div>
+        </div>`;
+    }).join('');
+}
 
-            document.getElementById('result-tabs').style.display = 'flex';
-            document.getElementById('shortlist-count-badge').style.display = 'block';
-
-            currentTab = 'all';
-            document.querySelectorAll('.tab').forEach((btn, i) => btn.classList.toggle('active', i === 0));
-            renderResults(allResults);
-        } catch(e) {
-            document.getElementById('results-container').innerHTML = '<div class="loading">Failed to load results</div>';
+// ── Shortlist Actions ─────────────────────────────────────────────────────────
+async function addShortlist(srId) {
+    try {
+        const res = await fetch(`${API}/recruitment/shortlist/${srId}/`, {
+            method: 'POST', headers: authHeaders(), body: JSON.stringify({})
+        });
+        if (res.ok) {
+            showAlert('success', '✅ Candidate shortlisted');
+            const r = allResults.find(r => (r.id || r.screening_result_id) === srId);
+            if (r) r.is_shortlisted = true;
+            renderUI();
+        } else {
+            const d = await res.json();
+            showAlert('error', d.error || 'Failed to shortlist');
         }
-    }
+    } catch(e) { showAlert('error', 'Something went wrong'); }
+}
 
-    async function addShortlist(resultId) {
-        try {
-            const res = await fetch(`${API}/recruitment/shortlist/${resultId}/`, {
-                method: 'POST', headers: authHeaders()
-            });
-            const data = await res.json();
-            if (res.ok) {
-                showSuccess('✅ Candidate shortlisted');
-                loadResults();
-            } else {
-                showError(data.error || data.message || 'Failed to shortlist');
-            }
-        } catch(e) { showError('Something went wrong'); }
-    }
+async function removeShortlist(srId) {
+    if (!confirm('Remove this candidate from shortlist?')) return;
+    try {
+        const res = await fetch(`${API}/recruitment/shortlist/${srId}/`, {
+            method: 'DELETE', headers: authHeaders()
+        });
+        if (res.ok || res.status === 204) {
+            showAlert('success', 'Removed from shortlist');
+            const r = allResults.find(r => (r.id || r.screening_result_id) === srId);
+            if (r) r.is_shortlisted = false;
+            renderUI();
+        } else {
+            showAlert('error', 'Failed to remove');
+        }
+    } catch(e) { showAlert('error', 'Something went wrong'); }
+}
 
-    async function removeShortlist(resultId) {
-        if (!confirm('Remove this candidate from shortlist?')) return;
-        try {
-            const res = await fetch(`${API}/recruitment/shortlist/${resultId}/`, {
-                method: 'DELETE', headers: authHeaders()
-            });
-            if (res.ok) {
-                showSuccess('Removed from shortlist');
-                loadResults();
-            } else {
-                const data = await res.json();
-                showError(data.error || 'Failed to remove');
-            }
-        } catch(e) { showError('Something went wrong'); }
-    }
-
-    loadJobs();
+// Init
+loadJobs();
 </script>
 </body>
 </html>

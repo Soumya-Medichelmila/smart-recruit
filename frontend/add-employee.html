@@ -143,6 +143,32 @@
         document.getElementById('success-alert').classList.remove('show');
     }
 
+    function showSuccess(msg) {
+        const el = document.getElementById('success-alert');
+        el.textContent = msg; el.classList.add('show');
+        document.getElementById('error-alert').classList.remove('show');
+    }
+
+    // ── Prefill from kanban "Mark as Selected" hand-off ─────────────────────
+    function prefillFromCandidate() {
+        const raw = localStorage.getItem('prefill_candidate');
+        if (!raw) return;
+
+        let data;
+        try { data = JSON.parse(raw); } catch { localStorage.removeItem('prefill_candidate'); return; }
+        if (!data || !data.from_kanban) { localStorage.removeItem('prefill_candidate'); return; }
+
+        if (data.first_name)  document.getElementById('first_name').value  = data.first_name;
+        if (data.last_name)   document.getElementById('last_name').value   = data.last_name;
+        if (data.email)       document.getElementById('email').value       = data.email;
+        if (data.designation) document.getElementById('designation').value = data.designation;
+
+        showSuccess('Prefilled from selected candidate — please review and complete the remaining fields.');
+
+        // Consume it so it doesn't leak into the next unrelated "Add Employee" visit
+        localStorage.removeItem('prefill_candidate');
+    }
+
     async function loadDropdowns() {
         try {
             const [deptsRes, locsRes, skillsRes] = await Promise.all([
@@ -233,6 +259,7 @@
     }
 
     loadDropdowns();
+    prefillFromCandidate();
 </script>
 </body>
 </html>

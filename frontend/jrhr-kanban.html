@@ -625,6 +625,49 @@ body {
 .inline-result { margin-top: 10px; font-size: 12px; }
 .inline-result.ok  { color: var(--green); }
 .inline-result.err { color: var(--red); }
+
+/* ─── Responsive ────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .sidebar { width: 64px; }
+  .sidebar-logo h1 { font-size: 0; }
+  .sidebar-logo h1::before { content: '⚡'; font-size: 18px; }
+  .sidebar-logo p, .sidebar-nav a span:not(.icon), .user-info { display: none; }
+  .sidebar-nav a { justify-content: center; padding: 10px; }
+  .sidebar-footer { padding: 8px; }
+  .sidebar-user { justify-content: center; }
+  .logout-btn { font-size: 0; padding: 8px; }
+  .logout-btn::before { content: '🚪'; font-size: 14px; }
+
+  .topbar { flex-wrap: wrap; height: auto; padding: 10px 14px; gap: 8px; }
+  .topbar-left { flex-wrap: wrap; }
+  .job-select { min-width: 160px; max-width: 100%; flex: 1; }
+  .topbar-stats { flex-wrap: wrap; width: 100%; }
+
+  .board { grid-template-columns: repeat(4, 240px); }
+}
+
+@media (max-width: 600px) {
+  .layout { flex-direction: column; height: auto; min-height: 100vh; }
+  .sidebar {
+    width: 100%; height: auto; flex-direction: row;
+    align-items: center; border-right: none; border-bottom: 1px solid var(--border);
+  }
+  .sidebar-logo { border-bottom: none; padding: 10px; }
+  .sidebar-nav { display: flex; flex: 1; padding: 6px; overflow-x: auto; }
+  .sidebar-nav a { margin-bottom: 0; margin-right: 4px; flex-shrink: 0; }
+  .sidebar-footer { border-top: none; padding: 6px 10px; }
+
+  .board-wrap { padding: 10px; }
+  .board {
+    display: flex; flex-direction: column;
+    grid-template-columns: none;
+    height: auto; min-width: 0;
+  }
+  .col { min-height: 200px; max-height: 50vh; }
+
+  .modal, .modal.wide { max-width: 95vw; }
+  .grid2 { grid-template-columns: 1fr; }
+}
 </style>
 </head>
 <body>
@@ -868,13 +911,14 @@ function overlayClick(e,id) { if (e.target===document.getElementById(id)) closeM
 function scoreColor(s) { return s>=80?'#3FB950':s>=60?'#D29922':s>=40?'#F07800':'#F85149'; }
 
 // ── State ─────────────────────────────────────────────────────────────────────
-let currentJobId    = null;
-let currentJobTitle = '';
-let candidates      = [];
-let employees       = [];
-let activeSid       = null;  // active shortlist id for modals
-let dragSrcId       = null;
-let roundIdx        = 0;     // incrementing counter for round DOM ids
+let currentJobId     = null;
+let currentJobTitle  = '';
+let currentJobClosed = false;
+let candidates       = [];
+let employees        = [];
+let activeSid        = null;  // active shortlist id for modals
+let dragSrcId        = null;
+let roundIdx         = 0;     // incrementing counter for round DOM ids
 
 // ── Load jobs into select ─────────────────────────────────────────────────────
 async function loadJobs() {
@@ -887,7 +931,8 @@ async function loadJobs() {
     jobs.forEach(j => {
       const o = document.createElement('option');
       o.value = j.job_id;
-      o.textContent = `${j.job_title}${j.department?' · '+j.department:''} (${j.shortlist_count})`;
+      o.dataset.closed = j.is_closed ? '1' : '0';
+      o.textContent = `${j.job_title}${j.department?' · '+j.department:''} (${j.shortlist_count})${j.is_closed?' — CLOSED':''}`;
       sel.appendChild(o);
     });
   } catch(e) { toast('Failed to load jobs','err'); }
@@ -917,7 +962,8 @@ async function selectJob(jobId) {
   }
   currentJobId = jobId;
   const opt = document.querySelector(`#job-select option[value="${jobId}"]`);
-  currentJobTitle = opt ? opt.textContent.split('·')[0].trim().replace(/\s*\(\d+\)\s*$/,'') : '';
+  currentJobTitle  = opt ? opt.textContent.split('·')[0].trim().replace(/\s*\(\d+\)\s*$/,'').replace(/\s*—\s*CLOSED\s*$/,'') : '';
+  currentJobClosed = opt ? opt.dataset.closed === '1' : false;
   document.getElementById('board-wrap').innerHTML = '<div style="flex:1;display:flex;align-items:center;justify-content:center"><div class="spinner"></div></div>';
   await fetchCandidates();
 }
@@ -970,7 +1016,10 @@ function renderBoard() {
       </div>`;
   }).join('');
 
-  document.getElementById('board-wrap').innerHTML = `<div class="board">${colsHtml}</div>`;
+  const closedBanner = currentJobClosed
+    ? `<div style="width:100%;background:var(--orange-bg);border:1px solid rgba(210,153,34,.3);color:var(--orange);padding:8px 14px;border-radius:8px;font-size:12px;font-weight:600;margin-bottom:10px">🔒 This job is closed. You can still manage existing candidates, but no new ones will be shortlisted.</div>`
+    : '';
+  document.getElementById('board-wrap').innerHTML = `<div style="display:flex;flex-direction:column;width:100%">${closedBanner}<div class="board">${colsHtml}</div></div>`;
 
   // Attach drag
   document.querySelectorAll('.card[draggable]').forEach(card=>{
@@ -1392,13 +1441,27 @@ async function confirmHired() {
   const btn = document.getElementById('hired-btn');
   btn.disabled=true; btn.textContent='⏳ Processing...';
 
+  const subj = document.getElementById('hired-subj').value;
+  const body = document.getElementById('hired-body-txt').value;
+
   try {
     const res = await apiFetch(`${API}/recruitment/shortlist/${activeSid}/status/`, {
-      method:'PATCH', body: JSON.stringify({status:'HIRED'}),
+      method:'PATCH',
+      body: JSON.stringify({
+        status: 'HIRED',
+        email_subject: subj,
+        email_body: body,
+      }),
     });
     if (res&&res.ok) {
+      const data = await res.json();
       if (s) s.status='HIRED';
-      toast(`${s?.candidate_name||'Candidate'} marked as Selected! 🎉`,'ok');
+
+      if (data.email_sent) {
+        toast(`${s?.candidate_name||'Candidate'} marked as Selected! 🎉 Email sent.`,'ok');
+      } else {
+        toast(`${s?.candidate_name||'Candidate'} marked as Selected, but email failed: ${data.email_message||'unknown error'}`,'err');
+      }
       closeModal('hired-overlay');
 
       // ── Admin / HR → redirect to Add Employee pre-filled ──────────────────
@@ -1415,8 +1478,10 @@ async function confirmHired() {
         // Brief success toast then navigate
         const resultEl = document.getElementById('hired-result');
         if (resultEl) {
-          resultEl.className = 'inline-result ok';
-          resultEl.innerHTML = `✅ Marked as Selected! Redirecting to Add Employee…`;
+          resultEl.className = data.email_sent ? 'inline-result ok' : 'inline-result err';
+          resultEl.innerHTML = data.email_sent
+            ? `✅ Marked as Selected! Email sent. Redirecting to Add Employee…`
+            : `⚠ Marked as Selected, but email failed: ${data.email_message||'unknown error'}. Redirecting to Add Employee…`;
         }
         setTimeout(() => {
           window.location.href = 'add-employee.html';
@@ -1426,8 +1491,10 @@ async function confirmHired() {
         // JR_HR — just refresh the board, they can't create employee accounts
         const resultEl = document.getElementById('hired-result');
         if (resultEl) {
-          resultEl.className = 'inline-result ok';
-          resultEl.innerHTML = `✅ Marked as Selected! HR/Admin will create the employee account.`;
+          resultEl.className = data.email_sent ? 'inline-result ok' : 'inline-result err';
+          resultEl.innerHTML = data.email_sent
+            ? `✅ Marked as Selected! Email sent. HR/Admin will create the employee account.`
+            : `⚠ Marked as Selected, but email failed: ${data.email_message||'unknown error'}.`;
         }
         setTimeout(async () => {
           closeModal('hired-overlay');
@@ -1471,15 +1538,40 @@ async function confirmRejected() {
   const btn = document.getElementById('reject-btn');
   btn.disabled=true; btn.textContent='⏳ Processing...';
 
+  const subj = document.getElementById('reject-subj').value;
+  const body = document.getElementById('reject-body-txt').value;
+
   try {
     const res = await apiFetch(`${API}/recruitment/shortlist/${activeSid}/status/`, {
-      method:'PATCH', body: JSON.stringify({status:'REJECTED'}),
+      method:'PATCH',
+      body: JSON.stringify({
+        status: 'REJECTED',
+        email_subject: subj,
+        email_body: body,
+      }),
     });
     if (res&&res.ok) {
+      const data = await res.json();
       if (s) s.status='REJECTED';
-      toast(`${s?.candidate_name||'Candidate'} rejected and archived.`,'info');
-      closeModal('reject-overlay');
-      await fetchCandidates();
+
+      if (data.email_sent) {
+        toast(`${s?.candidate_name||'Candidate'} rejected and archived. Email sent.`,'info');
+      } else {
+        toast(`${s?.candidate_name||'Candidate'} rejected, but email failed: ${data.email_message||'unknown error'}`,'err');
+      }
+
+      const el = document.getElementById('reject-result');
+      if (el) {
+        el.className = data.email_sent ? 'inline-result ok' : 'inline-result err';
+        el.innerHTML = data.email_sent
+          ? `✅ Rejected & email sent.`
+          : `⚠ Rejected, but email failed: ${data.email_message||'unknown error'}`;
+      }
+
+      setTimeout(async () => {
+        closeModal('reject-overlay');
+        await fetchCandidates();
+      }, 1200);
     } else {
       const el = document.getElementById('reject-result');
       el.textContent='❌ Failed'; el.className='inline-result err';

@@ -12,3 +12,6 @@ pdf2image
 Pillow
 django-cors-headers
 drf-yasg
+spacy
+chromadb
+sentence_transformers

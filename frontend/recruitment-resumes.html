@@ -4,57 +4,111 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Smart_Recruit — Resume Pool</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style.css" />
     <style>
-        .info-card {
+        /* ── Upload Zone ── */
+        .upload-zone {
+            border: 2px dashed #C7D2FE;
+            border-radius: 16px;
+            background: #F5F7FF;
+            padding: 48px 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color .2s, background .2s;
+            position: relative;
+        }
+        .upload-zone.dragover {
+            border-color: #4F46E5;
             background: #EEF2FF;
-            border-radius: 12px;
-            padding: 28px 24px;
-            border: 1px solid #C7D2FE;
-            margin-bottom: 24px;
-            display: flex;
-            align-items: center;
-            gap: 20px;
         }
-        .info-icon { font-size: 40px; }
-        .info-text h4 { margin: 0 0 6px 0; font-size: 16px; color: #3730A3; }
-        .info-text p  { margin: 0 0 16px 0; font-size: 13px; color: #4338CA; opacity: 0.85; }
-        .btn-go {
-            display: inline-block;
-            background: #4F46E5;
-            color: #fff;
-            font-weight: 700;
+        .upload-zone input[type="file"] {
+            position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+        }
+        .upload-icon { font-size: 48px; margin-bottom: 12px; }
+        .upload-zone h3 { margin: 0 0 6px; font-size: 18px; color: #1F2937; }
+        .upload-zone p  { margin: 0 0 16px; font-size: 13px; color: #6B7280; }
+        .upload-hint    { font-size: 12px; color: #9CA3AF; margin-top: 8px; }
+
+        /* ── File Queue ── */
+        .file-queue { margin-top: 20px; display: flex; flex-direction: column; gap: 8px; }
+        .file-item  {
+            display: flex; align-items: center; gap: 12px;
+            background: white; border: 1px solid #E5E7EB;
+            border-radius: 10px; padding: 10px 14px;
             font-size: 13px;
-            padding: 10px 20px;
-            border-radius: 8px;
-            text-decoration: none;
-            transition: opacity 0.15s;
         }
-        .btn-go:hover { opacity: 0.88; }
-        .sidebar-divider {
-            font-size: 10px; color: #6B7280; font-weight: 600;
-            text-transform: uppercase; padding: 8px 20px 4px; letter-spacing: 1px;
+        .file-item .file-icon { font-size: 20px; flex-shrink: 0; }
+        .file-item .file-name { flex: 1; color: #374151; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .file-item .file-size { color: #9CA3AF; font-size: 12px; flex-shrink: 0; }
+        .file-item .remove-btn { background: none; border: none; cursor: pointer; color: #EF4444; font-size: 16px; padding: 0 4px; flex-shrink: 0; }
+
+        /* ── Upload Progress ── */
+        .upload-result-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 16px; border-radius: 10px; font-size: 13px;
+            margin-bottom: 8px;
+        }
+        .upload-result-item.success { background: #F0FDF4; border: 1px solid #BBF7D0; }
+        .upload-result-item.failed  { background: #FEF2F2; border: 1px solid #FECACA; }
+        .result-icon { font-size: 18px; flex-shrink: 0; }
+        .result-name { flex: 1; font-weight: 500; }
+        .result-meta { font-size: 12px; color: #6B7280; }
+
+        /* ── Stats ── */
+        .stats-row { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+        .stat-card {
+            flex: 1; min-width: 120px;
+            background: white; border-radius: 12px;
+            padding: 18px 20px; text-align: center;
+            border: 1px solid #E5E7EB;
+        }
+        .stat-card .stat-num { font-size: 28px; font-weight: 800; color: #4F46E5; }
+        .stat-card .stat-label { font-size: 12px; color: #6B7280; margin-top: 4px; }
+
+        /* ── Buttons ── */
+        .btn-upload {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: #4F46E5; color: white; border: none;
+            padding: 12px 28px; border-radius: 10px; font-size: 14px;
+            font-weight: 700; cursor: pointer; transition: background .2s;
+        }
+        .btn-upload:hover { background: #4338CA; }
+        .btn-upload:disabled { background: #A5B4FC; cursor: not-allowed; }
+        .btn-clear {
+            background: none; border: 1px solid #E5E7EB; color: #6B7280;
+            padding: 12px 20px; border-radius: 10px; font-size: 14px;
+            cursor: pointer; transition: all .2s;
+        }
+        .btn-clear:hover { border-color: #EF4444; color: #EF4444; }
+
+        /* ── Progress Bar ── */
+        .progress-wrap { background: #F3F4F6; border-radius: 20px; height: 8px; overflow: hidden; margin: 16px 0; }
+        .progress-bar  { height: 100%; background: #4F46E5; border-radius: 20px; transition: width .3s; }
+
+        @media (max-width: 768px) {
+            .stats-row { gap: 10px; }
+            .stat-card { padding: 14px; }
+            .upload-zone { padding: 32px 16px; }
         }
     </style>
 </head>
 <body>
-
 <div class="layout">
 
     <aside class="sidebar">
         <div class="sidebar-logo">
             <h1>⚡ Smart_Recruit</h1>
-            <p>Employee Portal</p>
+            <p>Recruitment Portal</p>
         </div>
         <nav class="sidebar-nav">
             <a href="employee-dashboard.html"><span class="icon">🏠</span> Dashboard</a>
             <a href="raise-vacancy.html"><span class="icon">📝</span> Raise Vacancy</a>
             <a href="my-requests.html"><span class="icon">📋</span> My Requests</a>
             <a href="job-openings.html"><span class="icon">📢</span> Job Openings</a>
-            <a href="change-password.html"><span class="icon">🔑</span> Change Password</a>
-            <div class="sidebar-divider">Recruitment</div>
+            <div class="sidebar-divider" style="font-size:10px;color:#6B7280;font-weight:600;text-transform:uppercase;padding:8px 20px 4px;letter-spacing:1px">Recruitment</div>
             <a href="recruitment-resumes.html" class="active"><span class="icon">📄</span> Resume Pool</a>
             <a href="recruitment-screen.html"><span class="icon">🔍</span> Screen Resumes</a>
+            <a href="change-password.html"><span class="icon">🔑</span> Change Password</a>
         </nav>
         <div class="sidebar-footer">
             <div class="sidebar-user">
@@ -71,33 +125,319 @@
     <main class="main-content">
         <p class="page-title">📄 Resume Pool</p>
 
-        <div class="info-card">
-            <div class="info-icon">📂</div>
-            <div class="info-text">
-                <h4>Folder-Based Resume Screening</h4>
-                <p>
-                    Resumes are read directly from any folder path you provide.<br>
-                    Paste a folder path on the <strong>Screen Resumes</strong> page to scan and score all PDF / DOCX files inside it instantly.
-                </p>
-                <a href="recruitment-screen.html" class="btn-go">🔍 Go to Screen Resumes →</a>
+        <div class="alert alert-success" id="success-alert"></div>
+        <div class="alert alert-error"   id="error-alert"></div>
+
+        <!-- Stats -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-num" id="stat-total">—</div>
+                <div class="stat-label">Total Resumes</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num" id="stat-embedded" style="color:#10B981">—</div>
+                <div class="stat-label">Embedded in DB</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num" id="stat-shortlisted" style="color:#F59E0B">—</div>
+                <div class="stat-label">Shortlisted</div>
+            </div>
+        </div>
+
+        <!-- Upload Zone -->
+        <div class="card" style="padding:24px">
+            <h3 style="margin:0 0 6px;font-size:16px;color:#1F2937">📤 Upload Resumes</h3>
+            <p style="margin:0 0 20px;font-size:13px;color:#6B7280">Drag & drop or click to select PDF / DOCX files. Multiple files supported.</p>
+
+            <div class="upload-zone" id="upload-zone">
+                <input type="file" id="file-input" multiple accept=".pdf,.docx" onchange="handleFileSelect(this.files)" />
+                <div class="upload-icon">📂</div>
+                <h3>Drop resumes here</h3>
+                <p>or click to browse files</p>
+                <div class="upload-hint">Supports PDF and DOCX • Multiple files allowed</div>
+            </div>
+
+            <!-- File Queue -->
+            <div class="file-queue" id="file-queue"></div>
+
+            <!-- Action Buttons -->
+            <div id="action-row" style="display:none;margin-top:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+                <button class="btn-upload" id="upload-btn" onclick="uploadFiles()">
+                    🚀 Upload & Embed <span id="file-count"></span>
+                </button>
+                <button class="btn-clear" onclick="clearFiles()">✕ Clear All</button>
+            </div>
+
+            <!-- Progress -->
+            <div id="progress-section" style="display:none;margin-top:16px">
+                <div style="font-size:13px;color:#6B7280;margin-bottom:6px" id="progress-label">Uploading...</div>
+                <div class="progress-wrap"><div class="progress-bar" id="progress-bar" style="width:0%"></div></div>
+            </div>
+
+            <!-- Results -->
+            <div id="upload-results" style="margin-top:16px"></div>
+        </div>
+
+        <!-- Candidate Pool Table -->
+        <div class="card" style="margin-top:24px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px">
+                <h3 style="margin:0;font-size:16px;color:#1F2937">👥 Candidate Pool</h3>
+                <button onclick="loadCandidates()" style="background:none;border:1px solid #E5E7EB;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:13px;color:#6B7280">🔄 Refresh</button>
+            </div>
+            <div id="candidates-container">
+                <div style="text-align:center;padding:32px;color:#9CA3AF">Loading candidates...</div>
             </div>
         </div>
     </main>
 </div>
 
 <script>
-    const token = localStorage.getItem('access_token');
-    const dept  = localStorage.getItem('department_name') || '';
-    if (!token) window.location.href = 'index.html';
-    if (dept.trim().toUpperCase() !== 'RECRUITMENT') {
-        alert('Access denied. Only Recruitment department members can access this page.');
-        window.location.href = 'employee-dashboard.html';
+const API   = 'http://127.0.0.1:8000/api';
+const token = localStorage.getItem('access_token');
+if (!token) window.location.href = 'index.html';
+
+const name = localStorage.getItem('employee_name') || 'Recruiter';
+document.getElementById('user-name').textContent       = name;
+document.getElementById('user-role').textContent       = localStorage.getItem('role_name') || 'Recruitment';
+document.getElementById('avatar-initials').textContent = name.charAt(0).toUpperCase();
+
+function authHeaders() {
+    return { 'Authorization': `Bearer ${token}` };
+}
+function logout() { localStorage.clear(); window.location.href = 'index.html'; }
+
+function showAlert(type, msg) {
+    const el = document.getElementById(`${type}-alert`);
+    el.textContent = msg; el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 4000);
+}
+
+// ── Drag & Drop ──────────────────────────────────────────────────────────────
+const zone = document.getElementById('upload-zone');
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+zone.addEventListener('drop', e => {
+    e.preventDefault(); zone.classList.remove('dragover');
+    handleFileSelect(e.dataTransfer.files);
+});
+
+let selectedFiles = [];
+
+function handleFileSelect(fileList) {
+    const allowed = ['.pdf', '.docx'];
+    Array.from(fileList).forEach(f => {
+        const ext = '.' + f.name.split('.').pop().toLowerCase();
+        if (!allowed.includes(ext)) {
+            showAlert('error', `❌ ${f.name} — unsupported type. Only PDF and DOCX.`);
+            return;
+        }
+        if (!selectedFiles.find(sf => sf.name === f.name && sf.size === f.size)) {
+            selectedFiles.push(f);
+        }
+    });
+    renderQueue();
+}
+
+function renderQueue() {
+    const queue = document.getElementById('file-queue');
+    const actionRow = document.getElementById('action-row');
+    const countEl   = document.getElementById('file-count');
+
+    if (!selectedFiles.length) {
+        queue.innerHTML = '';
+        actionRow.style.display = 'none';
+        return;
     }
-    const name = localStorage.getItem('employee_name') || 'Recruiter';
-    document.getElementById('user-name').textContent       = name;
-    document.getElementById('user-role').textContent       = localStorage.getItem('role_name') || 'Recruitment';
-    document.getElementById('avatar-initials').textContent = name.charAt(0).toUpperCase();
-    function logout() { localStorage.clear(); window.location.href = 'index.html'; }
+
+    actionRow.style.display = 'flex';
+    countEl.textContent = `(${selectedFiles.length} file${selectedFiles.length > 1 ? 's' : ''})`;
+
+    queue.innerHTML = selectedFiles.map((f, i) => `
+        <div class="file-item">
+            <span class="file-icon">${f.name.endsWith('.pdf') ? '📕' : '📘'}</span>
+            <span class="file-name">${f.name}</span>
+            <span class="file-size">${(f.size / 1024).toFixed(0)} KB</span>
+            <button class="remove-btn" onclick="removeFile(${i})">✕</button>
+        </div>
+    `).join('');
+}
+
+function removeFile(i) {
+    selectedFiles.splice(i, 1);
+    renderQueue();
+}
+
+function clearFiles() {
+    selectedFiles = [];
+    document.getElementById('file-input').value = '';
+    document.getElementById('upload-results').innerHTML = '';
+    renderQueue();
+}
+
+async function uploadFiles() {
+    if (!selectedFiles.length) return;
+
+    const btn       = document.getElementById('upload-btn');
+    const progSec   = document.getElementById('progress-section');
+    const progBar   = document.getElementById('progress-bar');
+    const progLabel = document.getElementById('progress-label');
+    const resultsEl = document.getElementById('upload-results');
+
+    btn.disabled = true;
+    btn.textContent = '⏳ Uploading...';
+    progSec.style.display = 'block';
+    resultsEl.innerHTML   = '';
+
+    const formData = new FormData();
+    selectedFiles.forEach(f => formData.append('resumes', f));
+
+    try {
+        progLabel.textContent = `Uploading ${selectedFiles.length} resume(s)...`;
+        progBar.style.width   = '30%';
+
+        const res  = await fetch(`${API}/recruitment/bulk-upload/`, {
+            method : 'POST',
+            headers: authHeaders(),
+            body   : formData,
+        });
+
+        progBar.style.width = '80%';
+        const data = await res.json();
+        progBar.style.width = '100%';
+        progLabel.textContent = `Done! ${data.success} succeeded, ${data.failed} failed.`;
+
+        // Render results
+        resultsEl.innerHTML = data.results.map(r => `
+            <div class="upload-result-item ${r.status}">
+                <span class="result-icon">${r.status === 'success' ? '✅' : '❌'}</span>
+                <div style="flex:1">
+                    <div class="result-name">${r.filename}</div>
+                    ${r.status === 'success'
+                        ? `<div class="result-meta">👤 ${r.candidate_name || '—'} • ${r.email || 'No email'} • Embedded: ${r.is_embedded ? 'Yes' : 'No'}</div>`
+                        : `<div class="result-meta" style="color:#EF4444">${r.error}</div>`
+                    }
+                </div>
+            </div>
+        `).join('');
+
+        if (data.success > 0) {
+            showAlert('success', `✅ ${data.success} resume(s) uploaded and embedded successfully!`);
+        }
+        if (data.failed > 0) {
+            showAlert('error', `⚠️ ${data.failed} file(s) failed.`);
+        }
+
+        clearFiles();
+        loadStats();
+        loadCandidates();
+
+    } catch (e) {
+        showAlert('error', 'Upload failed. Check connection.');
+        progLabel.textContent = 'Upload failed.';
+    } finally {
+        btn.disabled    = false;
+        btn.innerHTML   = '🚀 Upload & Embed';
+    }
+}
+
+// ── Stats ────────────────────────────────────────────────────────────────────
+async function loadStats() {
+    try {
+        const [countRes, candidatesRes] = await Promise.all([
+            fetch(`${API}/recruitment/candidate-count/`, { headers: authHeaders() }),
+            fetch(`${API}/recruitment/candidates/`,      { headers: authHeaders() }),
+        ]);
+        const countData      = await countRes.json();
+        const candidatesData = await candidatesRes.json();
+
+        document.getElementById('stat-total').textContent      = candidatesData.length || 0;
+        document.getElementById('stat-embedded').textContent   = countData.count || 0;
+        document.getElementById('stat-shortlisted').textContent =
+            candidatesData.filter(c => c.is_shortlisted).length || 0;
+    } catch(e) { console.error(e); }
+}
+
+// ── Candidate Pool ────────────────────────────────────────────────────────────
+async function loadCandidates() {
+    const container = document.getElementById('candidates-container');
+    try {
+        const res  = await fetch(`${API}/recruitment/candidates/`, { headers: authHeaders() });
+        const data = await res.json();
+
+        if (!data.length) {
+            container.innerHTML = `<div style="text-align:center;padding:32px;color:#9CA3AF">
+                <div style="font-size:40px;margin-bottom:12px">📭</div>
+                No resumes uploaded yet. Upload some above to get started.
+            </div>`;
+            return;
+        }
+
+        container.innerHTML = `
+            <div style="overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse">
+                <thead>
+                    <tr>
+                        <th style="background:#F9FAFB;padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;border-bottom:1px solid #E5E7EB">#</th>
+                        <th style="background:#F9FAFB;padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;border-bottom:1px solid #E5E7EB">Name</th>
+                        <th style="background:#F9FAFB;padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;border-bottom:1px solid #E5E7EB">Email</th>
+                        <th style="background:#F9FAFB;padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;border-bottom:1px solid #E5E7EB">File</th>
+                        <th style="background:#F9FAFB;padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;border-bottom:1px solid #E5E7EB">Embedded</th>
+                        <th style="background:#F9FAFB;padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;border-bottom:1px solid #E5E7EB">Status</th>
+                        <th style="background:#F9FAFB;padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;border-bottom:1px solid #E5E7EB">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${data.map((c, i) => `
+                    <tr style="border-bottom:1px solid #F3F4F6">
+                        <td style="padding:12px 14px;font-size:13px;color:#9CA3AF">${i + 1}</td>
+                        <td style="padding:12px 14px;font-size:13px;font-weight:600;color:#1F2937">${c.full_name}</td>
+                        <td style="padding:12px 14px;font-size:12px;color:#6B7280">${c.email || '—'}</td>
+                        <td style="padding:12px 14px;font-size:12px;color:#6B7280;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.source_filename}</td>
+                        <td style="padding:12px 14px">
+                            <span style="font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;background:${c.is_embedded ? '#D1FAE5' : '#FEF3C7'};color:${c.is_embedded ? '#065F46' : '#92400E'}">
+                                ${c.is_embedded ? '✅ Yes' : '⏳ No'}
+                            </span>
+                        </td>
+                        <td style="padding:12px 14px">
+                            <span style="font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;background:${c.is_shortlisted ? '#EEF2FF' : '#F3F4F6'};color:${c.is_shortlisted ? '#4F46E5' : '#9CA3AF'}">
+                                ${c.is_shortlisted ? '⭐ Shortlisted' : 'In Pool'}
+                            </span>
+                        </td>
+                        <td style="padding:12px 14px">
+                            <button onclick="deleteCandidate(${c.id}, '${c.full_name}')"
+                                style="background:#FEF2F2;color:#DC2626;border:1px solid #FECACA;padding:5px 12px;border-radius:6px;font-size:12px;cursor:pointer;font-weight:600">
+                                🗑 Delete
+                            </button>
+                        </td>
+                    </tr>`).join('')}
+                </tbody>
+            </table>
+            </div>
+        `;
+    } catch(e) {
+        container.innerHTML = '<div style="color:#EF4444;padding:16px">Failed to load candidates.</div>';
+    }
+}
+
+async function deleteCandidate(id, name) {
+    if (!confirm(`Delete "${name}" from the resume pool? This also removes their embeddings.`)) return;
+    try {
+        const res = await fetch(`${API}/recruitment/candidates/${id}/`, {
+            method: 'DELETE', headers: authHeaders()
+        });
+        if (res.status === 204 || res.ok) {
+            showAlert('success', `Deleted ${name}`);
+            loadStats();
+            loadCandidates();
+        } else {
+            showAlert('error', 'Delete failed.');
+        }
+    } catch(e) { showAlert('error', 'Delete failed.'); }
+}
+
+// Init
+loadStats();
+loadCandidates();
 </script>
 </body>
 </html>
