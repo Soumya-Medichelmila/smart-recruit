@@ -15,3 +15,5 @@ drf-yasg
 spacy
 chromadb
 sentence_transformers
+dj-database-url 
+psycopg2-binary

@@ -1,12 +1,13 @@
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+import  os      
+from dotenv import load_dotenv
+load_dotenv()
 
-SECRET_KEY = 'django-insecure-_df0vvhvn3q+#83%*ox88&&gtmy+7!k9g8&)41zcr!dvw6zczu'
-
-DEBUG = True
-
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0"]
+SECRET_KEY = os.environ.get('SECRET_KEY')
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,0.0.0.0').split(',')
 
 AUTH_USER_MODEL = 'accounts.Employee'
 
@@ -94,11 +95,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'employee_management.wsgi.application'
 
+import dj_database_url
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}"
+    )
 }
 
 AUTH_PASSWORD_VALIDATORS = [
