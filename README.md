@@ -1,392 +1,509 @@
 # 🎯 Smart Recruit — Internal HR & Recruitment Management System
 
-A full-stack web application for managing the **end-to-end internal recruitment lifecycle** — from vacancy requests by employees to AI-powered resume screening, candidate shortlisting, interview scheduling, and onboarding.
+A full-stack web application for managing the complete internal recruitment lifecycle — from vacancy requests by employees to AI-powered resume screening, intelligent candidate shortlisting, interview scheduling, and onboarding.
+
+The system uses **Retrieval-Augmented Generation (RAG)** with **Sentence Transformers + ChromaDB + Groq LLM** to efficiently screen resumes while reducing LLM cost and preserving candidate privacy.
 
 ---
 
-## 🔄 How It Works — Full Recruitment Flow
+# 🔄 How It Works — Full Recruitment Flow
 
-```
 Employee raises vacancy request
-        ↓
+↓
 HR / Admin reviews & approves → Job Opening created
-        ↓
-Recruitment team uploads resumes & runs AI screening
-        ↓
-  Resume file received (PDF or DOCX)
-        ↓
-  ┌─────────────────────────────────┐
-  │  Is PDF text-based?             │
-  │  YES → pdfplumber extracts text │
-  │  NO (scanned/image PDF)         │
-  │      → pytesseract OCR extracts │
-  └─────────────────────────────────┘
-        ↓
-  Extracted text sent to Groq LLM (Llama 3.1)
-        ↓
-HR views screening results → Shortlists candidates
-        ↓
-JRHR / HR uses Kanban board → Drags candidates through pipeline
-  [Shortlisted → Interview Scheduled → Selected / Rejected]
-        ↓
-Interview Scheduled → Candidate receives email (via Mailtrap)
-        ↓
-Selected → Employee is added to the system
-Rejected → Candidate receives rejection email
-```
+↓
+Recruitment team uploads resumes (Bulk Upload Supported)
+↓
+Resume files received (PDF or DOCX)
+↓
 
----
-
-## 📌 Features
-
-### 👥 Employee & Vacancy Management
-- Internal employees can raise vacancy requests
-- HR / Admin reviews and approves requests
-- Approved requests automatically create job openings
-
-### 🤖 AI-Powered Resume Screening
-- Recruitment team uploads resumes (PDF / DOCX) for a job opening
-- AI (Groq LLM — Llama 3.1) screens each resume against the job description
-- Generates match scores (0–100) with detailed reasons
-- Supports both **text-based PDFs** (via pdfplumber) and **scanned/image PDFs** (via pytesseract OCR)
-
-### 📄 Smart Resume Parsing Pipeline
-| File Type | Parsing Method |
-|-----------|---------------|
-| DOCX | python-docx |
-| Text-based PDF | pdfplumber |
-| Scanned / Image PDF | pdf2image + pytesseract OCR |
-
-### 📊 Shortlisting & Results
-- HR views AI screening results per job opening
-- Shortlists candidates based on scores and review
-
-### 🗂️ Kanban Interview Pipeline (JRHR / HR)
-- Drag-and-drop Kanban board to manage candidate stages:
-  - **Shortlisted → Interview Scheduled → Selected / Rejected**
-- Moving to **Interview Scheduled** → sends interview invitation email (via Mailtrap)
-- Moving to **Rejected** → sends rejection email (via Mailtrap)
-- Moving to **Selected** → triggers employee onboarding (add to system)
-
-### 🔐 Role-Based Access Control
-| Role | Access |
-|------|--------|
-| Admin | Full access to everything |
-| HR | Approve vacancies, view results, shortlist, use Kanban |
-| JRHR | Use Kanban pipeline, manage interview stages |
-| Recruitment Dept | Upload resumes, run AI screening |
-| Employee | Raise vacancy requests only |
-
----
-
-## 🛠️ Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| Backend | Django 6.0, Django REST Framework |
-| Frontend | HTML, CSS, JavaScript |
-| AI / LLM | Groq API (Llama 3.1) |
-| Database | SQLite (dev) / PostgreSQL (prod) |
-| Auth | JWT (SimpleJWT) |
-| Email | Mailtrap (dummy SMTP for testing) |
-| PDF Extraction | pdfplumber (text-based PDFs) |
-| OCR (Scanned PDFs) | pytesseract + pdf2image + Poppler |
-| DOCX Parsing | python-docx |
-| Environment | python-dotenv |
-
----
-
-## 📁 Project Structure
+┌─────────────────────────────────────────┐
+│ Resume Parsing Pipeline                 │
+│                                         │
+│ DOCX → python-docx extracts text        │
+│ Text PDF → pdfplumber extracts text     │
+│ Scanned PDF → OCR via pytesseract       │
+└─────────────────────────────────────────┘
 
 ```
+    ↓  
+```
+
+Extracted text sent for section-based chunking
+
+```
+    ↓  
+```
+
+┌─────────────────────────────────────────┐
+│ Section Based Chunking                  │
+│                                         │
+│ Personal Information                    │
+│ Skills                                  │
+│ Experience                              │
+│ Education                               │
+│ Projects                                │
+│ Certifications                          │
+└─────────────────────────────────────────┘
+
+```
+    ↓  
+```
+
+Sentence Transformer generates embeddings
+
+```
+    ↓  
+```
+
+Embeddings stored in ChromaDB Vector Database
+
+```
+    ↓  
+```
+
+Job Description received
+
+```
+    ↓  
+```
+
+Generate Job Description embedding
+
+```
+    ↓  
+```
+
+Vector similarity search performed
+
+```
+    ↓  
+```
+
+Retrieve top matching resumes only
+
+```
+    ↓  
+```
+
+PII extraction removes:
+
+* Name
+* Email
+* Phone number
+* Address
+* Sensitive information
+
+  ```
+    ↓  
+  ```
+
+Threshold check performed
+
+If similarity score > threshold:
+
+→ Candidate directly shortlisted
+
+Else:
+
+→ Retrieved resumes sent to Groq LLM (Llama 3.1)
+
+```
+    ↓  
+```
+
+LLM generates:
+
+* Match score
+* Missing skills
+* Candidate strengths
+* Detailed reasoning
+
+  ```
+    ↓  
+  ```
+
+HR views screening results
+
+```
+    ↓  
+```
+
+JRHR / HR manages candidates using Kanban board
+
+[Shortlisted → Interview Scheduled → Selected / Rejected]
+
+```
+    ↓  
+```
+
+Interview invitation email sent
+
+```
+    ↓  
+```
+
+Selected → Candidate onboarding
+Rejected → Rejection email sent
+
+---
+
+# 📌 Features
+
+## 👥 Employee & Vacancy Management
+
+* Employees can raise vacancy requests
+* HR/Admin approves requests
+* Approved requests automatically create job openings
+
+---
+
+## 📄 Bulk Resume Upload
+
+* Upload multiple resumes simultaneously
+* Supports PDF and DOCX
+* Supports scanned resumes
+
+---
+
+## 🤖 AI-Powered Resume Screening (RAG)
+
+* Uses Retrieval-Augmented Generation architecture
+* Resume section-based chunking
+* Sentence Transformer embeddings
+* ChromaDB vector storage
+* Semantic search retrieval
+* Groq LLM evaluation
+
+---
+
+## 🔒 Privacy Preserving Screening
+
+PII extraction layer removes:
+
+* Names
+* Emails
+* Phone numbers
+* Addresses
+* Sensitive information
+
+Benefits:
+
+* Better privacy
+* Reduced bias
+* Safer AI processing
+
+---
+
+## ⚡ Intelligent Auto Shortlisting
+
+Candidates with high similarity score:
+
+→ Automatically shortlisted
+
+Lower score candidates:
+
+→ Sent to LLM for evaluation
+
+---
+
+## 📊 Candidate Results
+
+HR can view:
+
+* Match scores
+* Candidate strengths
+* Missing skills
+* Detailed AI reasoning
+* Ranking
+
+---
+
+## 🗂️ Kanban Interview Pipeline
+
+Drag-and-drop workflow:
+
+Shortlisted
+→ Interview Scheduled
+→ Selected
+→ Rejected
+
+Actions:
+
+* Send interview email
+* Send rejection email
+* Trigger onboarding
+
+---
+
+## 🔐 Role-Based Access Control
+
+| Role             | Access                                          |
+| ---------------- | ----------------------------------------------- |
+| Admin            | Full access                                     |
+| HR               | Approve vacancies, shortlist candidates, Kanban |
+| JRHR             | Manage interview stages                         |
+| Recruitment Team | Upload resumes and run screening                |
+| Employee         | Raise vacancy requests                          |
+
+---
+
+# 🛠️ Tech Stack
+
+| Layer           | Technology                       |
+| --------------- | -------------------------------- |
+| Backend         | Django, Django REST Framework    |
+| Frontend        | HTML, CSS, JavaScript            |
+| AI / LLM        | Groq API (Llama 3.1)             |
+| Embedding Model | Sentence Transformers            |
+| Vector Database | ChromaDB                         |
+| Database        | SQLite (dev) / PostgreSQL (prod) |
+| Authentication  | JWT (SimpleJWT)                  |
+| OCR             | pytesseract + pdf2image          |
+| PDF Parsing     | pdfplumber                       |
+| DOCX Parsing    | python-docx                      |
+| Email           | Mailtrap                         |
+| Environment     | python-dotenv                    |
+
+---
+
+# 📁 Project Structure
+
+```text
 smart-recruit/
-├── frontend/                        # HTML/CSS/JS frontend
+
+├── frontend/
 │   ├── css/
 │   │   └── style.css
-│   ├── index.html                   # Login page
+│   ├── index.html
 │   ├── admin-dashboard.html
 │   ├── employee-dashboard.html
 │   ├── hr-screening-results.html
 │   ├── jrhr-dashboard.html
-│   ├── jrhr-kanban.html             # Kanban drag-and-drop board
+│   ├── jrhr-kanban.html
 │   ├── recruitment-screen.html
-│   ├── recruitment-resumes.html
-│   └── ...
-│
-└── backend/                         # Django REST API
-    ├── accounts/                    # Auth, users, roles
-    ├── employee_management/         # Django project settings
+│   └── recruitment-resumes.html
+
+└── backend/
+    ├── accounts/
+    ├── employee_management/
     │   ├── settings.py
     │   ├── urls.py
     │   ├── asgi.py
     │   └── wsgi.py
-    ├── jobs/                        # Job openings
-    ├── masters/                     # Departments & master data
-    ├── recruitment/                 # Resumes, screening, shortlisting
+
+    ├── jobs/
+    ├── masters/
+
+    ├── recruitment/
     │   ├── migrations/
     │   ├── models.py
-    │   ├── views.py
     │   ├── serializers.py
+    │   ├── views.py
     │   ├── urls.py
+    │
     │   └── utils/
-    │       └── resume_parser.py     # pdfplumber + pytesseract logic
-    ├── media/                       # Uploaded resumes
-    ├── .gitignore
+    │       ├── resume_parser.py
+    │       ├── section_chunker.py
+    │       ├── embedding_service.py
+    │       ├── vector_store.py
+    │       ├── pii_extractor.py
+    │       └── rag_pipeline.py
+
+    ├── media/
+    ├── chromadb/
     ├── manage.py
     └── requirements.txt
 ```
 
 ---
 
-## ⚙️ Setup & Installation
+# ⚙️ Setup & Installation
 
-### 1. Clone the repository
+### Clone repository
+
 ```bash
 git clone https://github.com/Soumya-Medichelmila/smart-recruit.git
+
 cd smart-recruit
 ```
 
-### 2. Set up virtual environment
-```bash
-# Windows
-python -m venv venv
-venv\Scripts\activate
+### Create virtual environment
 
-# Mac/Linux
+Windows:
+
+```bash
 python -m venv venv
+
+venv\Scripts\activate
+```
+
+Linux/Mac:
+
+```bash
+python -m venv venv
+
 source venv/bin/activate
 ```
 
-### 3. Install dependencies
+### Install dependencies
+
 ```bash
 pip install -r backend/requirements.txt
 ```
 
-### 4. Install Tesseract OCR Engine (for scanned PDFs)
+### Configure .env
 
-Tesseract is an external binary required by pytesseract.
-
-**Windows:**
-1. Download the installer from [https://github.com/UB-Mannheim/tesseract/wiki](https://github.com/UB-Mannheim/tesseract/wiki)
-2. Run the installer (default path: `C:\Program Files\Tesseract-OCR\tesseract.exe`)
-3. Add Tesseract to your system PATH, **or** set it in your code:
-```python
-# In resume_parser.py or settings.py
-import pytesseract
-pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
-```
-
-**Ubuntu/Debian:**
-```bash
-sudo apt install tesseract-ocr
-```
-
-**Mac:**
-```bash
-brew install tesseract
-```
-
-### 5. Install Poppler (required by pdf2image)
-
-pdf2image converts scanned PDF pages into images for OCR.
-
-**Windows:**
-1. Download Poppler for Windows from [https://github.com/oschwartz10612/poppler-windows/releases](https://github.com/oschwartz10612/poppler-windows/releases)
-2. Extract and add the `bin/` folder to your system PATH
-
-**Ubuntu/Debian:**
-```bash
-sudo apt install poppler-utils
-```
-
-**Mac:**
-```bash
-brew install poppler
-```
-
-### 6. Create `.env` file inside `backend/`
 ```env
-GROQ_API_KEY=your_groq_api_key_here
-SECRET_KEY=your_django_secret_key_here
-DEBUG=True
-DATABASE_URL=your_database_url_here
+GROQ_API_KEY=your_api_key
 
-# Mailtrap email config
+SECRET_KEY=your_secret_key
+
+DEBUG=True
+
+DATABASE_URL=your_database_url
+
 EMAIL_HOST=sandbox.smtp.mailtrap.io
+
 EMAIL_PORT=2525
-EMAIL_HOST_USER=your_mailtrap_user
-EMAIL_HOST_PASSWORD=your_mailtrap_password
+
+EMAIL_HOST_USER=your_user
+
+EMAIL_HOST_PASSWORD=your_password
+
 EMAIL_USE_TLS=True
 ```
 
-### 7. Run migrations
+### Run migrations
+
 ```bash
 cd backend
+
 python manage.py migrate
 ```
 
-### 8. Create superuser
+### Create admin
+
 ```bash
 python manage.py createsuperuser
 ```
 
-### 9. Start the server
+### Start server
+
 ```bash
 python manage.py runserver
 ```
 
-### 10. Open the frontend
-Open `frontend/index.html` in your browser or serve it via Live Server.
+---
+
+# 📡 API Endpoints
+
+### Authentication
+
+| Method | Endpoint           |
+| ------ | ------------------ |
+| POST   | /api/auth/login/   |
+| POST   | /api/auth/refresh/ |
+
+### Recruitment
+
+| Method | Endpoint                                   |
+| ------ | ------------------------------------------ |
+| POST   | /api/recruitment/bulk-upload/              |
+| POST   | /api/recruitment/screen/<job_id>/          |
+| GET    | /api/recruitment/results/<job_id>/         |
+| POST   | /api/recruitment/shortlist/<candidate_id>/ |
 
 ---
 
-## 🔑 Get Free API Keys
+# 🤖 AI Screening Details
 
-### Groq API (AI Screening)
-1. Go to [console.groq.com](https://console.groq.com)
-2. Sign up for a free account
-3. Generate an API key and paste it in `.env`
+Resume Upload
+↓
 
-### Mailtrap (Email Testing)
-1. Go to [mailtrap.io](https://mailtrap.io)
-2. Sign up for a free account
-3. Go to **Email Testing → Inboxes → SMTP Settings**
-4. Copy your credentials into `.env`
+Resume Parsing
+↓
 
----
+Section Based Chunking
+↓
 
-## 📡 API Endpoints
+Sentence Transformer Embeddings
+↓
 
-### Auth
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/auth/login/` | Login & get JWT token |
-| POST | `/api/auth/refresh/` | Refresh JWT token |
+Store in ChromaDB
+↓
 
-### Vacancy & Jobs
-| Method | Endpoint | Access | Description |
-|--------|----------|--------|-------------|
-| POST | `/api/jobs/vacancy-request/` | Employee | Raise vacancy request |
-| GET | `/api/jobs/vacancy-requests/` | HR / Admin | View all requests |
-| PATCH | `/api/jobs/vacancy-request/<id>/approve/` | HR / Admin | Approve → creates job opening |
-| GET | `/api/jobs/openings/` | All | List job openings |
+Generate JD Embedding
+↓
 
-### Recruitment & Screening
-| Method | Endpoint | Access | Description |
-|--------|----------|--------|-------------|
-| GET | `/api/recruitment/resumes/` | Recruitment | List all resumes |
-| POST | `/api/recruitment/resumes/` | Recruitment | Upload resume |
-| DELETE | `/api/recruitment/resumes/<id>/` | Recruitment | Delete resume |
-| POST | `/api/recruitment/screen/<job_id>/` | Recruitment | Run AI screening |
-| GET | `/api/recruitment/results/<job_id>/` | HR / Admin | View screening results |
-| GET | `/api/recruitment/results/` | HR / Admin | All screened jobs |
+Semantic Search
+↓
 
-### Shortlisting & Kanban
-| Method | Endpoint | Access | Description |
-|--------|----------|--------|-------------|
-| POST | `/api/recruitment/shortlist/<candidate_id>/` | HR | Shortlist candidate |
-| PATCH | `/api/recruitment/shortlist/<id>/stage/` | HR / JRHR | Update Kanban stage |
+Retrieve Top Matches
+↓
+
+Remove PII
+↓
+
+Threshold Check
+
+High score?
+
+YES → Auto Shortlist
+
+NO → Send to Groq LLM
+
+↓
+
+Generate Final Result
 
 ---
 
-## 🤖 AI Screening Details
+# 📦 Key Dependencies
 
-The system uses **Groq LLM (Llama 3.1)** to automatically evaluate resumes against job descriptions.
-
-### Resume Parsing Pipeline
-
-Before sending to the LLM, each uploaded resume goes through a smart parsing pipeline:
-
-```
-Resume Uploaded (PDF or DOCX)
-        ↓
-   Is it a DOCX?
-   YES → python-docx extracts text directly
-        ↓
-   Is it a PDF?
-        ↓
-   ┌─── Try pdfplumber ───────────────────────────────┐
-   │    Extracts text from text-based/digital PDFs    │
-   │    Fast, accurate, preserves formatting          │
-   └──────────────────────────────────────────────────┘
-        ↓
-   Was text found? (len > threshold)
-   YES → Use pdfplumber text ✅
-   NO  → PDF is scanned/image-based
-        ↓
-   ┌─── Fallback: pytesseract OCR ────────────────────┐
-   │    pdf2image converts each page → image          │
-   │    pytesseract reads text from image via OCR     │
-   │    Handles scanned resumes, photo PDFs           │
-   └──────────────────────────────────────────────────┘
-        ↓
-   Extracted text → sent to Groq LLM for scoring
-```
-
-### Scoring
-| Score | Match Level |
-|-------|-------------|
-| 80–100 | Excellent match |
-| 60–79 | Good match |
-| 40–59 | Partial match |
-| 0–39 | Poor match |
+* django
+* djangorestframework
+* djangorestframework-simplejwt
+* groq
+* sentence-transformers
+* chromadb
+* pdfplumber
+* pytesseract
+* pdf2image
+* python-docx
+* python-dotenv
+* Pillow
 
 ---
 
-## 📦 Key Dependencies
+# 📧 Email Notifications
 
-```
-django
-djangorestframework
-djangorestframework-simplejwt
-groq
-pdfplumber
-pytesseract
-pdf2image
-python-docx
-python-dotenv
-Pillow
-```
-
-> Full list in `backend/requirements.txt`
+| Trigger             | Action                    |
+| ------------------- | ------------------------- |
+| Interview Scheduled | Send interview invitation |
+| Rejected            | Send rejection email      |
+| Selected            | Trigger onboarding        |
 
 ---
 
-## 📧 Email Notifications (via Mailtrap)
+# 🚫 .gitignore
 
-All emails are sent to **Mailtrap's sandbox inbox** for testing — no real emails are sent.
-
-| Trigger | Email Sent To |
-|---------|--------------|
-| Candidate moved to **Interview Scheduled** | Candidate — interview invitation |
-| Candidate moved to **Rejected** | Candidate — rejection email |
-| Candidate moved to **Selected** | Internal team — onboarding trigger |
-
----
-
-## 🚫 .gitignore
-
-The following are never committed:
-```
+```gitignore
 venv/
 __pycache__/
 *.pyc
 .env
 db.sqlite3
 media/
+chromadb/
 staticfiles/
 .vscode/
 ```
 
 ---
 
-## 👨‍💻 Author
+# 👨‍💻 Author
 
-**Soumya Medichelmila**  
-Built with Django REST Framework + Groq AI + pdfplumber + pytesseract OCR + Mailtrap
+Soumya Medichelmila
 
----
-
-## 📄 License
-
-MIT License — free to use and modify.
+Built with Django REST Framework + RAG + ChromaDB + Sentence Transformers + Groq AI + OCR + Mailtrap
